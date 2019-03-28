@@ -1,5 +1,5 @@
-# Real-Time Pulse Sensor
-Web site of Real-Time Pulse Sensor monitoring
+# Real-Time Heart Rate
+Real-Time heart rates monitoring using pulse sensor
 
 ## Getting started
 
@@ -8,8 +8,8 @@ Before using this program, make sure you have [NodeJS](https://nodejs.org/) inst
 First, all you have to do is cloning this program.
 
 ```bash
-git clone https://github.com/danang-id/realtime-pulse-sensor.git
-cd realtime-pulse-sensor
+git clone https://github.com/danang-id/realtime-heart-rate.git
+cd realtime-heart-rate
 ```
 
 Then, install all NodeJS libraries/dependencies using NPM.
