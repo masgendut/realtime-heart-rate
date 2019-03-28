@@ -46,7 +46,7 @@ Make sure `pm2` has been installed by issuing `pm2` command. Terminal restart ma
 
 ```bash
 npm run build
-pm2 start ecosystem.config.js
+pm2 start
 ```
 
 ## Contribution
