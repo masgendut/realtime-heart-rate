@@ -33,12 +33,23 @@ const io = SocketIO(server, {})
 const port = process.env.PORT || 9000
 
 async function getDatabase() {
-    return mysql.createConnection({
+    const connection = await mysql.createConnection({
         host    : process.env.DB_HOST || 'localhost',
         user    : process.env.DB_USERNAME || 'root',
         password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME || 'database'
+        database: process.env.DB_NAME || 'heartrate',
+        timezone: 'UTC',
+        dateStrings: [
+            'DATE',
+            'DATETIME'
+        ]
     })
+    try {
+        await connection.query('SET time_zone=\'+00:00\';')
+        return connection
+    } catch (error) {
+        throw error
+    }
 }
 
 app.use(json())
@@ -80,7 +91,7 @@ app.get('/emit-pulse', asyncHandler(async (request, response) => {
         const { insertId } = await database.query('INSERT INTO pulses SET ?', pulse)
         const pulses: IPulseModel[] = await database.query('SELECT * FROM pulses WHERE ?', { id: insertId })
         pulse = pulses[0]
-        io.emit(WebSocketEvent.onPulseEmit, pulse)
+        io.emit(WebSocketEvent.onEmitHeartRate, pulse)
         return response.json({
             success: true,
             code: 200,
@@ -98,7 +109,7 @@ app.get('/emit-pulse', asyncHandler(async (request, response) => {
 }));
 
 io.on('connection', function (socket) {
-    socket.emit(WebSocketEvent.onConnection, 'Connected to Real Time server using Web Socket.');
+    socket.emit(WebSocketEvent.onConnection, 'Connected to Real-Time server using Web Socket.');
     socket.on(WebSocketEvent.onRequestDevices, async () => {
         try {
             const database = await getDatabase()
@@ -108,11 +119,11 @@ io.on('connection', function (socket) {
             socket.emit(WebSocketEvent.onError, error)
         }
     })
-    socket.on(WebSocketEvent.onRequestPulses, async (deviceId) => {
+    socket.on(WebSocketEvent.onRequestHeartRates, async (deviceId) => {
         try {
             const database = await getDatabase()
             const pulses: IPulseModel[] = await database.query('SELECT * FROM pulses WHERE ?', { deviceId })
-            socket.emit(WebSocketEvent.onRetrievePulses, pulses)
+            socket.emit(WebSocketEvent.onRetrieveHeartRates, pulses)
         } catch(error) {
             socket.emit(WebSocketEvent.onError, error)
         }
@@ -125,11 +136,11 @@ server.listen(port, () => {
 
 enum WebSocketEvent {
     onConnection = 'onConnection',
-    onPulseEmit = 'onPulseEmit',
+    onEmitHeartRate = 'onEmitHeartRate',
     onRequestDevices = 'onRequestDevices',
     onRetrieveDevices = 'onRetrieveDevices',
-    onRequestPulses = 'onRequestPulses',
-    onRetrievePulses = 'onRetrievePulses',
+    onRequestHeartRates = 'onRequestHeartRates',
+    onRetrieveHeartRates = 'onRetrieveHeartRates',
     onError = 'onError'
 }
 

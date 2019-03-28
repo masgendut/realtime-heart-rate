@@ -6,48 +6,60 @@
     <meta name="description" content="Real time pulse sensor monitoring.">
     <meta name="author" content="Danang Galuh Tegar Prasetyo">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>Real Time Pulse Sensor</title>
+    <title>Real-Time Heart Rate</title>
 </head>
 <body>
 
     <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-        <h5 class="my-0 mr-md-auto font-weight-normal">Real Time Pulse Sensor</h5>
+        <h5 class="my-0 mr-md-auto font-weight-normal">Real-Time Heart Rate</h5>
         <nav class="my-2 my-md-0 mr-md-3">
-            <a class="p-2 text-dark active" href="#">Monitoring</a>
+            <a class="p-2 text-dark active" href="#"><strong>Monitoring</strong></a>
+            <a class="p-2 text-dark active" href="https://github.com/danang-id/realtime-heart-rate">Source Code</a>
         </nav>
     </div>
 
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
         <h1 class="display-4">Monitoring</h1>
-        <p class="lead">Monitors heart rate pulse emitted by device.</p>
+        <p class="lead">Monitors heart rate emitted by device (pulse sensor).</p>
     </div>
 
     <div class="container">
 
         <div class="information"></div>
 
-        <select class="custom-select device-select">
-            <option selected disabled>Getting device data...</option>
-        </select>
-
-        <br />
-        <br />
-
-        <table class="table pulse-table">
-            <thead class="thead-light">
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Pulse</th>
-                    <th scope="col">Emitted At</th>
-                    <th scope="col">Time from Device to Front-End</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="3">Please select a device first.</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="col-lg-4">
+                <select class="custom-select device-select" style="margin-bottom: 20px;">
+                    <option selected disabled>Getting device data...</option>
+                </select>
+                <br/>
+                <div class="card heart-rate-card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal">Heart Rate</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title"><span class="heart-rate">0</span> <small class="text-muted">bpm</small></h1>
+                        <p class="heart-rate-emit-time"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <table class="table heart-rate-table">
+                    <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Heart Rate</th>
+                        <th scope="col">Emitted At</th>
+                        <th scope="col">Time from Device to Front-End</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="3">Please select a device first.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <footer class="pt-4 my-md-5 pt-md-5 border-top">
             <div class="row">

@@ -13,11 +13,23 @@ function main() {
     const copyrightElement = document.querySelector('.copyright');
     const informationElement = document.querySelector('.information');
     const deviceSelectElement = document.querySelector('.device-select');
-    const tableBodyElement = document.querySelector('.pulse-table tbody');
+    const heartRateElement = document.querySelector('.heart-rate');
+    const heartRateEmitTimeElement = document.querySelector('.heart-rate-emit-time');
+    const tableBodyElement = document.querySelector('.heart-rate-table tbody');
 
     copyrightElement.innerHTML = 'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
-    function showAlert(type, message) {
-        informationElement.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert" role="alert">' + message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'
+    let lastPulseReceived = new Date();
+    let devices = [];
+    let selectedDeviceId = null;
+    function showAlert(type, message, isReplace) {
+        if (isReplace === true) {
+            informationElement.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert" role="alert">' + message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'
+        } else {
+            informationElement.innerHTML = informationElement.innerHTML + '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert" role="alert">' + message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'
+        }
+    }
+    function getSelectedDevice() {
+        return devices.find(dev => dev.id === selectedDeviceId);
     }
 
     const AlertType = {
@@ -32,11 +44,11 @@ function main() {
     };
     const WebSocketEvent = {
         onConnection: 'onConnection',
-        onPulseEmit: 'onPulseEmit',
+        onEmitHeartRate: 'onPulseEmit',
         onRequestDevices: 'onRequestDevices',
         onRetrieveDevices: 'onRetrieveDevices',
-        onRequestPulses: 'onRequestPulses',
-        onRetrievePulses: 'onRetrievePulses',
+        onRequestHeartRates: 'onRequestHeartRates',
+        onRetrieveHeartRates: 'onRetrieveHeartRates',
         onError: 'onError'
     };
 
@@ -49,32 +61,36 @@ function main() {
 
     socket.on(WebSocketEvent.onConnection, function(message) {
         console.log(message);
-        showAlert(AlertType.Info, message);
+        showAlert(AlertType.Success, message, true);
     });
 
-    socket.on(WebSocketEvent.onRetrieveDevices, function(devices) {
-        if (!Array.isArray(devices)) {
+    socket.on(WebSocketEvent.onRetrieveDevices, function(_devices) {
+        if (!Array.isArray(_devices)) {
             console.log('Data on Web Socket "onRetrieveDevices" event is not an array. Parsing failed!');
             return;
         }
+        devices = _devices;
         let deviceSelectHTML = '';
-        for (const device of devices) {
+        for (const device of _devices) {
             device.id = parseInt(device.id);
             deviceSelectHTML = deviceSelectHTML + addNewOption(device.id, device.name);
         }
-        deviceSelectElement.innerHTML = '<option selected disabled>Please select a device...</option>' + deviceSelectHTML;
+        deviceSelectElement.innerHTML = '<option selected disabled>Select a device...</option>' + deviceSelectHTML;
     });
 
-    socket.on(WebSocketEvent.onRetrievePulses, function(pulses) {
+    socket.on(WebSocketEvent.onRetrieveHeartRates, function(pulses) {
         if (!Array.isArray(pulses)) {
-            console.log('Data on Web Socket "onRetrievePulses" event is not an array. Parsing failed!');
+            console.log('Data on Web Socket "onRetrieveHeartRates" event is not an array. Parsing failed!');
+            return;
+        }
+        if (pulses.length === 0) {
+            tableBodyElement.innerHTML = '<tr><td colspan="3">There are no any heart rates data for ' + getSelectedDevice().name + '.</td></tr>'
             return;
         }
         let tableBodyHTML = '';
         for (const pulse of pulses) {
             pulse.emitted_at = new Date(pulse.emitted_at);
             tableBodyHTML = addNewRow(
-                pulse.id,
                 pulse.pulse,
                 pulse.emitted_at.toLocaleDateString().concat(' ', pulse.emitted_at.toLocaleTimeString()),
                 '-'
@@ -83,17 +99,20 @@ function main() {
         tableBodyElement.innerHTML = tableBodyHTML;
     });
 
-    socket.on(WebSocketEvent.onPulseEmit, function(pulse) {
-        const receivedAt = new Date();
-        pulse.emitted_at = new Date(pulse.emitted_at);
-        pulse.created_at = new Date(pulse.created_at);
-        const secondsFromDevice = (receivedAt.getTime() - pulse.emitted_at.getTime()) / 1000;
-        tableBodyElement.innerHTML = addNewRow(
-            pulse.id,
-            pulse.pulse,
-            pulse.emitted_at.toLocaleDateString().concat(' ', pulse.emitted_at.toLocaleTimeString()),
-            secondsFromDevice.toString() + ' s',
-        ) + tableBodyElement.innerHTML;
+    socket.on(WebSocketEvent.onEmitHeartRate, function(pulse) {
+        if (selectedDeviceId !== null && parseInt(pulse.deviceId) === selectedDeviceId) {
+            lastPulseReceived = new Date();
+            pulse.emitted_at = new Date(pulse.emitted_at);
+            pulse.created_at = new Date(pulse.created_at);
+            const secondsFromDevice = (lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
+            heartRateElement.innerHTML = pulse.pulse;
+            heartRateEmitTimeElement.innerHTML = secondsFromDevice.toString() + ' seconds from device';
+            tableBodyElement.innerHTML = addNewRow(
+                pulse.pulse,
+                pulse.emitted_at.toLocaleDateString().concat(' ', pulse.emitted_at.toLocaleTimeString()),
+                secondsFromDevice.toString() + ' s',
+            ) + tableBodyElement.innerHTML;
+        }
     });
 
     socket.on(WebSocketEvent.onError, function(error) {
@@ -101,9 +120,9 @@ function main() {
         showAlert(AlertType.Danger, error.message);
     });
 
-    socket.on('error', function() {
-        console.log('Error');
-        showAlert(AlertType.Danger, 'An unknown error happen on Web Socket.');
+    socket.on('error', function(message) {
+        console.log(message ? message : 'An unknown error happen on Web Socket.');
+        showAlert(AlertType.Danger, message ? message : 'An unknown error happen on Web Socket.');
     });
 
     socket.on('connect_failed', function() {
@@ -113,13 +132,24 @@ function main() {
 
     socket.on('disconnect', function() {
         console.log('Disconnected from Web Socket server!');
-        createAlert(AlertType.Warning, 'Disconnected from Web Socket server!');
+        showAlert(AlertType.Warning, 'Disconnected from Web Socket server!');
     });
 
     deviceSelectElement.addEventListener('change', function() {
-        socket.emit(WebSocketEvent.onRequestPulses, parseInt(deviceSelectElement.value));
+        selectedDeviceId = parseInt(deviceSelectElement.value);
+        tableBodyElement.innerHTML = '<tr><td colspan="3">Getting heart rates data of ' + getSelectedDevice().name + '</td></tr>'
+        socket.emit(WebSocketEvent.onRequestHeartRates, selectedDeviceId);
     });
 
+    showAlert(AlertType.Warning, 'Connecting to Real-Time server via Web Socket...');
     socket.emit(WebSocketEvent.onRequestDevices);
+
+    setInterval(function(){
+        const timeDiff = (new Date()).getTime() - lastPulseReceived.getTime();
+        if (timeDiff > 3000) {
+            heartRateElement.innerHTML = '0';
+            heartRateEmitTimeElement.innerHTML = '';
+        }
+    }, 1000);
 
 }
