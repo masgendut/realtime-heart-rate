@@ -16,6 +16,9 @@ function main() {
     const heartRateElement = document.querySelector('.heart-rate');
     const heartRateEmitTimeElement = document.querySelector('.heart-rate-emit-time');
     const tableBodyElement = document.querySelector('.heart-rate-table tbody');
+    const dataTable = $('.heart-rate-table').DataTable({
+        "pagingType": "full_numbers"
+    });
 
     copyrightElement.innerHTML = 'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
     let lastPulseReceived = new Date();
@@ -92,8 +95,8 @@ function main() {
             pulse.emitted_at = new Date(pulse.emitted_at);
             tableBodyHTML = addNewRow(
                 pulse.pulse,
-                pulse.emitted_at.toLocaleDateString().concat(' ', pulse.emitted_at.toLocaleTimeString()),
-                '-'
+                moment(pulse.emitted_at).format('lll'),
+                ''
             ) + tableBodyHTML;
         }
         tableBodyElement.innerHTML = tableBodyHTML;
@@ -109,7 +112,7 @@ function main() {
             heartRateEmitTimeElement.innerHTML = secondsFromDevice.toString() + ' seconds from device';
             tableBodyElement.innerHTML = addNewRow(
                 pulse.pulse,
-                pulse.emitted_at.toLocaleDateString().concat(' ', pulse.emitted_at.toLocaleTimeString()),
+                moment(pulse.emitted_at).format('lll'),
                 secondsFromDevice.toString() + ' s',
             ) + tableBodyElement.innerHTML;
         }
@@ -137,6 +140,8 @@ function main() {
 
     deviceSelectElement.addEventListener('change', function() {
         selectedDeviceId = parseInt(deviceSelectElement.value);
+        heartRateElement.innerHTML = '0';
+        heartRateEmitTimeElement.innerHTML = '';
         tableBodyElement.innerHTML = '<tr><td colspan="3">Getting heart rates data of ' + getSelectedDevice().name + '</td></tr>'
         socket.emit(WebSocketEvent.onRequestHeartRates, selectedDeviceId);
     });
