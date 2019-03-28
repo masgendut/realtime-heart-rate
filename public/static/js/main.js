@@ -44,7 +44,7 @@ function main() {
     };
     const WebSocketEvent = {
         onConnection: 'onConnection',
-        onEmitHeartRate: 'onPulseEmit',
+        onEmitHeartRate: 'onEmitHeartRate',
         onRequestDevices: 'onRequestDevices',
         onRetrieveDevices: 'onRetrieveDevices',
         onRequestHeartRates: 'onRequestHeartRates',
