@@ -40,7 +40,9 @@ function main() {
         onError: 'onError'
     };
 
-    const socket = io('http://localhost:45080', {
+    const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/';
+
+    const socket = io(serverURI, {
         autoConnect: true,
         transports: ['websocket']
     });
@@ -114,7 +116,7 @@ function main() {
         createAlert(AlertType.Warning, 'Disconnected from Web Socket server!');
     });
 
-    deviceSelectElement.addEventListener('change', function(event) {
+    deviceSelectElement.addEventListener('change', function() {
         socket.emit(WebSocketEvent.onRequestPulses, parseInt(deviceSelectElement.value));
     });
 
