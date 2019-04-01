@@ -31,18 +31,18 @@ const app = express();
 const server = new http.Server(app);
 const io = SocketIO(server, {});
 const port = process.env.PORT || 9000;
-const pool = mysql.createPool({
+const mysqlConnectionConfig: mysql.ConnectionConfig = {
 	host: process.env.DB_HOST || 'localhost',
 	user: process.env.DB_USERNAME || 'root',
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME || 'heartrate',
 	timezone: 'UTC',
 	dateStrings: ['DATE', 'DATETIME']
-});
+};
 
 async function getDatabase() {
 	try {
-		const connection = await pool.getConnection();
+		const connection = await mysql.createConnection(mysqlConnectionConfig);
 		await connection.query("SET time_zone='+00:00';");
 		return connection;
 	} catch (error) {
@@ -107,6 +107,7 @@ app.get(
 				'SELECT * FROM pulses WHERE ?',
 				{ id: insertId }
 			);
+			await database.end();
 			pulse = pulses[0];
 			io.emit(WebSocketEvent.onEmitHeartRate, pulse);
 			return response.json({
@@ -137,6 +138,7 @@ io.on('connection', function(socket) {
 			const devices: IDeviceModel[] = await database.query(
 				'SELECT * FROM devices'
 			);
+			await database.end();
 			emit(WebSocketEvent.onRetrieveDevices, devices);
 		} catch (error) {
 			emit(WebSocketEvent.onError, error);
@@ -149,6 +151,7 @@ io.on('connection', function(socket) {
 				'SELECT * FROM pulses WHERE ?',
 				{ deviceId }
 			);
+			await database.end();
 			emit(WebSocketEvent.onRetrieveHeartRates, pulses);
 		} catch (error) {
 			emit(WebSocketEvent.onError, error);
