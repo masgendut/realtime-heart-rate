@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ac61dd4f-e6d5-4f07-9b35-efcdfb8b74ee" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -18,10 +18,19 @@
   <component name="FileEditorManager">
     <leaf>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/app.ts">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="49" column="25" lean-forward="true" selection-start-line="49" selection-start-column="25" selection-end-line="49" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/public/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="246">
-              <caret line="75" column="201" selection-start-line="75" selection-start-column="201" selection-end-line="75" selection-end-column="201" />
+            <state relative-caret-position="405">
+              <caret line="80" column="185" selection-start-line="80" selection-start-column="185" selection-end-line="80" selection-end-column="185" />
               <folding>
                 <element signature="n#style#0;n#select#0;n#div#0;n#div#1;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -32,13 +41,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/public/static/js/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="354">
-              <caret line="35" column="5" selection-start-line="35" selection-start-column="5" selection-end-line="35" selection-end-column="5" />
+            <state relative-caret-position="407">
+              <caret line="94" column="34" lean-forward="true" selection-start-line="94" selection-start-column="34" selection-end-line="94" selection-end-column="34" />
               <folding>
                 <element signature="n#!!block;n#showAlert#0;n#!!block;n#main#0" />
                 <element signature="e#181#188#1" expanded="true" />
                 <element signature="e#181#188#1" expanded="true" />
                 <element signature="n#!!block;n#getSelectedDevice#0;n#!!block;n#main#0" />
+                <element signature="n#!!block;n#createDataTable#0;n#!!block;n#main#0" />
               </folding>
             </state>
           </provider>
@@ -65,10 +75,10 @@
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/tsconfig.json" />
         <option value="$PROJECT_DIR$/.env" />
-        <option value="$PROJECT_DIR$/src/app.ts" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/ecosystem.config.js" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/src/app.ts" />
         <option value="$PROJECT_DIR$/public/index.html" />
         <option value="$PROJECT_DIR$/public/static/js/main.js" />
       </list>
@@ -80,7 +90,8 @@
     <other-services-enabled>true</other-services-enabled>
     <auto-save>true</auto-save>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-6" />
     <option name="y" value="23" />
     <option name="width" value="1366" />
     <option name="height" value="677" />
@@ -114,6 +125,11 @@
               <item name="public" type="462c0819:PsiDirectoryNode" />
               <item name="static" type="462c0819:PsiDirectoryNode" />
               <item name="js" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="realtime-heart-rate" type="b2602c69:ProjectViewProjectNode" />
+              <item name="realtime-heart-rate" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -192,7 +208,7 @@
       <workItem from="1553774093663" duration="1671000" />
       <workItem from="1553777132756" duration="93000" />
       <workItem from="1553777401730" duration="51000" />
-      <workItem from="1553777784215" duration="955000" />
+      <workItem from="1553777784215" duration="2868000" />
     </task>
     <task id="LOCAL-00001" summary="Add front-end page">
       <created>1553760184343</created>
@@ -257,15 +273,21 @@
       <option name="project" value="LOCAL" />
       <updated>1553777443696</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Add Data Table and MomentJS">
+      <created>1553779224055</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1553779224056</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="20943000" />
+    <option name="totallyTimeSpent" value="22856000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-5" y="23" width="1366" height="677" extended-state="6" />
-    <editor active="true" />
+    <frame x="-6" y="23" width="1366" height="677" extended-state="0" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48857644" visible="true" weight="0.24981412" />
       <window_info id="Structure" order="1" sideWeight="0.5114235" side_tool="true" weight="0.24981412" />
@@ -302,7 +324,8 @@
     <MESSAGE value="Automatically detects Socket.IO URL" />
     <MESSAGE value="Add pm2 ecosystem config file" />
     <MESSAGE value="Fix typo onEmitHeartRate" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix typo onEmitHeartRate" />
+    <MESSAGE value="Add Data Table and MomentJS" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Data Table and MomentJS" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/node_modules/ts-node/dist/bin.js">
@@ -316,13 +339,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="5" column="1" selection-start-line="5" selection-start-column="1" selection-end-line="5" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="12" column="25" lean-forward="true" selection-start-line="12" selection-start-column="25" selection-end-line="12" selection-end-column="25" />
         </state>
       </provider>
     </entry>
@@ -372,20 +388,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="17" column="25" lean-forward="true" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/app.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
-          <caret line="111" column="64" selection-start-line="111" selection-start-column="64" selection-end-line="111" selection-end-column="64" />
-          <folding>
-            <element signature="n#!!block;n#getDatabase#0" />
-          </folding>
+        <state relative-caret-position="238">
+          <caret line="49" column="25" lean-forward="true" selection-start-line="49" selection-start-column="25" selection-end-line="49" selection-end-column="25" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/public/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="246">
-          <caret line="75" column="201" selection-start-line="75" selection-start-column="201" selection-end-line="75" selection-end-column="201" />
+        <state relative-caret-position="405">
+          <caret line="80" column="185" selection-start-line="80" selection-start-column="185" selection-end-line="80" selection-end-column="185" />
           <folding>
             <element signature="n#style#0;n#select#0;n#div#0;n#div#1;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
           </folding>
@@ -394,13 +414,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/public/static/js/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="354">
-          <caret line="35" column="5" selection-start-line="35" selection-start-column="5" selection-end-line="35" selection-end-column="5" />
+        <state relative-caret-position="407">
+          <caret line="94" column="34" lean-forward="true" selection-start-line="94" selection-start-column="34" selection-end-line="94" selection-end-column="34" />
           <folding>
             <element signature="n#!!block;n#showAlert#0;n#!!block;n#main#0" />
             <element signature="e#181#188#1" expanded="true" />
             <element signature="e#181#188#1" expanded="true" />
             <element signature="n#!!block;n#getSelectedDevice#0;n#!!block;n#main#0" />
+            <element signature="n#!!block;n#createDataTable#0;n#!!block;n#main#0" />
           </folding>
         </state>
       </provider>
