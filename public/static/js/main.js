@@ -204,6 +204,7 @@ function onResponseEvent(event, ...args) {
 			break;
 		case WebSocketEvent.onRetrieveHeartRates:
 			onRetrieveHeartRates(...args);
+			generateTables();
 			break;
 	}
 }

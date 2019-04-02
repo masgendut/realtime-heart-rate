@@ -1,5 +1,8 @@
 # Real-Time Heart Rate
+
 Real-Time heart rates monitoring using pulse sensor
+
+[![hosting terbaik](https://goo.gl/CJlcyZ)](https://www.domainesia.com/?aff=4049)
 
 ## Getting started
 
@@ -59,8 +62,8 @@ This project is using [SemVer](http://semver.org/) for versioning. For the versi
 
 ## Authors
 
-- **Danang Galuh Tegar Prasetyo** - _Initial work_ - [danang-id](https://github.com/danang-id)
-- **Mokhamad Mustaqim** - [masgendut](https://github.com/masgendut)
+-   **Danang Galuh Tegar Prasetyo** - _Initial work_ - [danang-id](https://github.com/danang-id)
+-   **Mokhamad Mustaqim** - [masgendut](https://github.com/masgendut)
 
 See also the list of [contributors](https://github.com/danang-id/realtime-pulse-sensor/contributors) who participated in this project.
 
