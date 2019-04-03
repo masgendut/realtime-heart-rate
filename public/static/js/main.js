@@ -20,24 +20,37 @@ const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
 	'.heart-rate-emit-time'
 );
-const tableBodyElement = document.querySelector('.heart-rate-table tbody');
+const tableJQueryElement = $('.heart-rate-table');
 copyrightElement.innerHTML =
 	'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
 
+let datatable = null;
 let lastPulseReceived = new Date();
 let devices = [];
+let tableData = null;
+let isTableDataReversed = false;
 let selectedDeviceId = null;
 
 function addNewOption(value, option) {
 	return '<option value="' + value + '">' + option + '</option>';
 }
 
-function addNewRow() {
-	let rowHTML = '<tr>';
-	for (let index = 0; index < arguments.length; index++) {
-		rowHTML = rowHTML.concat('<td>' + arguments[index] + '</td>');
+function addDataTableRows(rows) {
+	if (!Array.isArray(rows)) {
+		console.log(
+			'Rows on Data Table "addDataTableRows" is not an array. Parsing failed!'
+		);
+		return;
 	}
-	return rowHTML.concat('</tr>');
+	datatable.clear();
+	datatable.rows.add(rows);
+	datatable.draw();
+}
+
+function setDataTableText(text) {
+	datatable.clear();
+	datatable.context[0].oLanguage.emptyTable = text;
+	datatable.draw();
 }
 
 function showAlert(type, message, isReplace) {
@@ -96,35 +109,12 @@ const socket = io(serverURI, {
 	transports: ['websocket']
 });
 
-socket.on('error', function(message) {
-	console.log(message ? message : 'An unknown error happen on Web Socket.');
-	showAlert(
-		AlertType.Danger,
-		message ? message : 'An unknown error happen on Web Socket.',
-		true
-	);
-});
-
-socket.on('connect_failed', function() {
-	console.log('Failed to connect to Web Socket server!');
-	showAlert(
-		AlertType.Danger,
-		'Failed to connect to Web Socket server!',
-		true
-	);
-});
-
-socket.on('disconnect', function() {
-	console.log('Disconnected from Web Socket server!');
-	showAlert(AlertType.Warning, 'Disconnected from Web Socket server!', true);
-});
-
-socket.on(WebSocketEvent.onConnection, function(message) {
+function onConnection(message) {
 	console.log(message);
 	showAlert(AlertType.Success, message, true);
-});
+}
 
-socket.on(WebSocketEvent.onEmitHeartRate, function(pulse) {
+function onEmitHeartRate(pulse) {
 	if (
 		selectedDeviceId !== null &&
 		parseInt(pulse.deviceId) === selectedDeviceId
@@ -137,14 +127,17 @@ socket.on(WebSocketEvent.onEmitHeartRate, function(pulse) {
 		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML =
 			secondsFromDevice.toString() + ' seconds from device';
-		tableBodyElement.innerHTML =
-			addNewRow(
-				pulse.pulse,
-				moment(pulse.emitted_at).format('lll'),
-				secondsFromDevice.toString() + ' s'
-			) + tableBodyElement.innerHTML;
+		const row = [
+			pulse.pulse,
+			moment(pulse.emitted_at).format('lll'),
+			secondsFromDevice.toString() + ' s'
+		];
+		tableData.reverse();
+		tableData.push(row);
+		const rows = tableData;
+		addDataTableRows(rows.reverse());
 	}
-});
+}
 
 function onRetrieveDevices(_devices) {
 	if (!Array.isArray(_devices)) {
@@ -173,20 +166,21 @@ function onRetrieveHeartRates(pulses) {
 		return;
 	}
 	if (pulses.length === 0) {
-		tableBodyElement.innerHTML =
-			'<tr><td colspan="3">There are no any heart rates data for ' +
-			getSelectedDevice().name +
-			'.</td></tr>';
+		setDataTableText(
+			'There are no any heart rates data for ' +
+				getSelectedDevice().name +
+				'.'
+		);
 		return;
 	}
-	let tableBodyHTML = '';
+	const rows = [];
 	for (const pulse of pulses) {
 		pulse.emitted_at = new Date(pulse.emitted_at);
-		tableBodyHTML =
-			addNewRow(pulse.pulse, moment(pulse.emitted_at).format('lll'), '') +
-			tableBodyHTML;
+		const row = [pulse.pulse, moment(pulse.emitted_at).format('lll'), ''];
+		rows.push(row);
 	}
-	tableBodyElement.innerHTML = tableBodyHTML;
+	tableData = rows;
+	addDataTableRows(rows.reverse());
 }
 
 function onError(error) {
@@ -204,19 +198,39 @@ function onResponseEvent(event, ...args) {
 			break;
 		case WebSocketEvent.onRetrieveHeartRates:
 			onRetrieveHeartRates(...args);
-			generateTables();
 			break;
 	}
 }
 
+socket.on(WebSocketEvent.onConnection, onConnection);
+socket.on(WebSocketEvent.onEmitHeartRate, onEmitHeartRate);
+socket.on('error', function(message) {
+	console.log(message ? message : 'An unknown error happen on Web Socket.');
+	showAlert(
+		AlertType.Danger,
+		message ? message : 'An unknown error happen on Web Socket.',
+		true
+	);
+});
+socket.on('connect_failed', function() {
+	console.log('Failed to connect to Web Socket server!');
+	showAlert(
+		AlertType.Danger,
+		'Failed to connect to Web Socket server!',
+		true
+	);
+});
+socket.on('disconnect', function() {
+	console.log('Disconnected from Web Socket server!');
+	showAlert(AlertType.Warning, 'Disconnected from Web Socket server!', true);
+});
 deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
-	tableBodyElement.innerHTML =
-		'<tr><td colspan="3">Getting heart rates data of ' +
-		getSelectedDevice().name +
-		'</td></tr>';
+	setDataTableText(
+		'Getting heart rates data of ' + getSelectedDevice().name + '...'
+	);
 	socket.emit(
 		WebSocketEvent.onRequestHeartRates,
 		selectedDeviceId,
@@ -225,6 +239,13 @@ deviceSelectElement.addEventListener('change', function() {
 });
 
 function main() {
+	datatable = tableJQueryElement.DataTable({
+		data: [],
+		language: {
+			emptyTable: 'Please select a device first.'
+		},
+		ordering: false
+	});
 	showAlert(
 		AlertType.Warning,
 		'Connecting to Real-Time server via Web Socket...'
