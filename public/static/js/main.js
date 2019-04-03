@@ -48,9 +48,16 @@ function addDataTableRows(rows) {
 }
 
 function setDataTableText(text) {
-	datatable.clear();
-	datatable.context[0].oLanguage.emptyTable = text;
-	datatable.draw();
+	if (datatable) {
+		datatable.destroy();
+	}
+	datatable = tableJQueryElement.DataTable({
+		data: [],
+		language: {
+			emptyTable: text
+		},
+		ordering: false
+	});
 }
 
 function showAlert(type, message, isReplace) {
@@ -239,13 +246,7 @@ deviceSelectElement.addEventListener('change', function() {
 });
 
 function main() {
-	datatable = tableJQueryElement.DataTable({
-		data: [],
-		language: {
-			emptyTable: 'Please select a device first.'
-		},
-		ordering: false
-	});
+	setDataTableText('Please select a device first.');
 	showAlert(
 		AlertType.Warning,
 		'Connecting to Real-Time server via Web Socket...'
