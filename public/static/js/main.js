@@ -20,10 +20,16 @@ const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
 	'.heart-rate-emit-time'
 );
+const heartRateChartElement = document.querySelector('#heart-rate-chart');
+const transportDelayChartElement = document.querySelector(
+	'#transport-delay-chart'
+);
 const tableJQueryElement = $('.heart-rate-table');
 copyrightElement.innerHTML =
 	'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
 
+let heartRateChart = null;
+let transportDelayChart = null;
 let datatable = null;
 let lastPulseReceived = new Date();
 let devices = [];
@@ -33,6 +39,69 @@ let selectedDeviceId = null;
 
 function addNewOption(value, option) {
 	return '<option value="' + value + '">' + option + '</option>';
+}
+
+function initialiseChart() {
+	function createOptions(dataset) {
+		return {
+			type: 'line',
+			data: {
+				labels: ['', '', '', '', '', ''],
+				datasets: [dataset]
+			},
+			options: {
+				scales: {
+					yAxes: [
+						{
+							ticks: {
+								beginAtZero: true
+							}
+						}
+					]
+				}
+			}
+		};
+	}
+	heartRateChart = new Chart(
+		heartRateChartElement,
+		createOptions({
+			label: 'heart rate',
+			data: [0, 0, 0, 0, 0, 0],
+			backgroundColor: 'rgba(255, 255, 255, 0)',
+			borderColor: 'rgba(54, 162, 235, 1)',
+			borderWidth: 1
+		})
+	);
+	transportDelayChart = new Chart(
+		transportDelayChartElement,
+		createOptions({
+			label: 'seconds from device',
+			data: [0, 0, 0, 0, 0, 0],
+			backgroundColor: 'rgba(255, 255, 255, 0)',
+			borderColor: 'rgba(255, 99, 132, 1)',
+			borderWidth: 1
+		})
+	);
+}
+
+function pushChartData(pulse, secondsFromDevice) {
+	function shiftData(dataset, lastData) {
+		dataset.data[0] = dataset.data[1];
+		dataset.data[1] = dataset.data[2];
+		dataset.data[2] = dataset.data[3];
+		dataset.data[3] = dataset.data[4];
+		dataset.data[4] = dataset.data[5];
+		dataset.data[5] = lastData;
+		return dataset;
+	}
+	heartRateChart.data.datasets.forEach(dataset => {
+		dataset = shiftData(dataset, pulse);
+	});
+	transportDelayChart.data.datasets.forEach(dataset => {
+		dataset = shiftData(dataset, secondsFromDevice);
+	});
+	heartRateChart.update();
+	transportDelayChart.update();
 }
 
 function addDataTableRows(rows) {
@@ -134,6 +203,7 @@ function onEmitHeartRate(pulse) {
 		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML =
 			secondsFromDevice.toString() + ' seconds from device';
+		pushChartData(pulse.pulse, secondsFromDevice);
 		const row = [
 			pulse.pulse,
 			moment(pulse.emitted_at).format('lll'),
@@ -251,12 +321,14 @@ function main() {
 		AlertType.Warning,
 		'Connecting to Real-Time server via Web Socket...'
 	);
+	initialiseChart();
 	socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
 	setInterval(function() {
 		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
 		if (timeDiff > 3000) {
 			heartRateElement.innerHTML = '0';
 			heartRateEmitTimeElement.innerHTML = '';
+			pushChartData(0, 0);
 		}
 	}, 1000);
 }
