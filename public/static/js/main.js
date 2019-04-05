@@ -205,16 +205,16 @@ function onEmitHeartRate(pulse) {
 		lastPulseReceived = new Date();
 		pulse.emitted_at = new Date(pulse.emitted_at);
 		pulse.created_at = new Date(pulse.created_at);
-		const secondsFromDevice =
+		const transportDelay =
 			(lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
 		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML =
-			secondsFromDevice.toString() + ' seconds from device';
-		pushChartData(pulse.pulse, secondsFromDevice);
+			transportDelay.toString() + ' seconds from device';
+		pushChartData(pulse.pulse, transportDelay);
 		const row = [
 			pulse.pulse,
 			moment(pulse.emitted_at).format('lll'),
-			secondsFromDevice.toString() + ' s'
+			transportDelay.toString() + ' s'
 		];
 		tableData.reverse();
 		tableData.push(row);
