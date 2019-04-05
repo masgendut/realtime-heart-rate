@@ -20,20 +20,19 @@ const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
 	'.heart-rate-emit-time'
 );
+const changeChartButtonElement = document.querySelector('#change-chart-button');
 const heartRateChartElement = document.querySelector('#heart-rate-chart');
-const transportDelayChartElement = document.querySelector(
-	'#transport-delay-chart'
-);
 const tableJQueryElement = $('.heart-rate-table');
 copyrightElement.innerHTML =
 	'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
 
-let heartRateChart = null;
-let transportDelayChart = null;
+let chart = null;
+let activeChart = 0;
+let chartData = [];
 let datatable = null;
 let lastPulseReceived = new Date();
 let devices = [];
-let tableData = null;
+let tableData = [];
 let isTableDataReversed = false;
 let selectedDeviceId = null;
 
@@ -42,66 +41,74 @@ function addNewOption(value, option) {
 }
 
 function initialiseChart() {
-	function createOptions(dataset) {
-		return {
-			type: 'line',
-			data: {
-				labels: ['', '', '', '', '', ''],
-				datasets: [dataset]
-			},
-			options: {
-				scales: {
-					yAxes: [
-						{
-							ticks: {
-								beginAtZero: true
-							}
-						}
-					]
+	changeChartButtonElement.innerHTML = 'View Time Delay Chart';
+	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	chart = new Chart(heartRateChartElement, {
+		type: 'line',
+		data: {
+			labels: ['', '', '', '', '', ''],
+			datasets: [
+				{
+					label: 'heart rate',
+					data: [0, 0, 0, 0, 0, 0],
+					backgroundColor: 'rgba(255, 255, 255, 0)',
+					borderColor: 'rgba(54, 162, 235, 1)',
+					borderWidth: 1
 				}
+			]
+		},
+		options: {
+			scales: {
+				yAxes: [
+					{
+						ticks: {
+							beginAtZero: true
+						}
+					}
+				]
 			}
-		};
-	}
-	heartRateChart = new Chart(
-		heartRateChartElement,
-		createOptions({
-			label: 'heart rate',
-			data: [0, 0, 0, 0, 0, 0],
-			backgroundColor: 'rgba(255, 255, 255, 0)',
-			borderColor: 'rgba(54, 162, 235, 1)',
-			borderWidth: 1
-		})
-	);
-	transportDelayChart = new Chart(
-		transportDelayChartElement,
-		createOptions({
-			label: 'seconds from device',
-			data: [0, 0, 0, 0, 0, 0],
-			backgroundColor: 'rgba(255, 255, 255, 0)',
-			borderColor: 'rgba(255, 99, 132, 1)',
-			borderWidth: 1
-		})
-	);
+		}
+	});
+	changeChartButtonElement.style.display = 'block';
 }
 
-function pushChartData(pulse, secondsFromDevice) {
-	function shiftData(dataset, lastData) {
-		dataset.data[0] = dataset.data[1];
-		dataset.data[1] = dataset.data[2];
-		dataset.data[2] = dataset.data[3];
-		dataset.data[3] = dataset.data[4];
-		dataset.data[4] = dataset.data[5];
-		dataset.data[5] = lastData;
-		return dataset;
+function updateChart() {
+	chart.data.datasets[0].data = chartData[activeChart];
+	chart.update();
+}
+
+function switchChart() {
+	activeChart = activeChart === 0 ? 1 : 0;
+	changeChartButtonElement.innerHTML =
+		activeChart === 0 ? 'View Time Delay Chart' : 'View Heart Rate Chart';
+	if (activeChart === 0) {
+		changeChartButtonElement.classList.add('btn-danger');
+		changeChartButtonElement.classList.remove('btn-info');
+	} else {
+		changeChartButtonElement.classList.add('btn-info');
+		changeChartButtonElement.classList.remove('btn-danger');
 	}
-	heartRateChart.data.datasets.forEach(dataset => {
-		dataset = shiftData(dataset, pulse);
-	});
-	transportDelayChart.data.datasets.forEach(dataset => {
-		dataset = shiftData(dataset, secondsFromDevice);
-	});
-	heartRateChart.update();
-	transportDelayChart.update();
+	chart.data.datasets[0].label =
+		activeChart === 0 ? 'heart rate' : 'seconds from device';
+	chart.data.datasets[0].borderColor =
+		activeChart === 0 ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 99, 132, 1)';
+	updateChart();
+}
+
+function pushChartData(heartRate, timeDelay) {
+	for (let x = 0; x < 2; x++) {
+		for (let y = 5; y > 0; y--) {
+			chartData[x][y] = chartData[x][y - 1];
+		}
+	}
+	chartData[0][0] = heartRate;
+	chartData[1][0] = timeDelay;
+	updateChart();
+}
+
+function clearChartData() {
+	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	updateChart();
 }
 
 function addDataTableRows(rows) {
@@ -248,6 +255,7 @@ function onRetrieveHeartRates(pulses) {
 				getSelectedDevice().name +
 				'.'
 		);
+		tableData = [];
 		return;
 	}
 	const rows = [];
@@ -305,6 +313,7 @@ deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
+	clearChartData();
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);
@@ -313,6 +322,9 @@ deviceSelectElement.addEventListener('change', function() {
 		selectedDeviceId,
 		onResponseEvent
 	);
+});
+changeChartButtonElement.addEventListener('click', function() {
+	switchChart();
 });
 
 function main() {
