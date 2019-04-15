@@ -17,6 +17,8 @@ import path from 'path';
 import http from 'http';
 import express from 'express';
 // @ts-ignore
+import secure from 'express-force-https';
+// @ts-ignore
 import favicon from 'express-favicon';
 import { json, urlencoded } from 'body-parser';
 import asyncHandler from 'express-async-handler';
@@ -50,6 +52,7 @@ async function getDatabase() {
 	}
 }
 
+app.use(secure);
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
