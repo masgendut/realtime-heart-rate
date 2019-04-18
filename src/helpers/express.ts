@@ -16,7 +16,7 @@
 import {NextFunction, Request, Response} from "express-serve-static-core";
 
 export function requireHTTPS(req: Request, res: Response ,next: NextFunction) {
-    const schema: string = ((req.headers['x-forwarded-proto'] as string) || '').toLowerCase();
+    const schema: string = ((req.headers['x-forwarded-proto'] as string) || '').toLowerCase();
     req.headers.host && req.headers.host.indexOf('localhost') < 0 && schema !== 'https'
         ? res.redirect('https://' + req.headers.host + req.originalUrl)
         : next();
