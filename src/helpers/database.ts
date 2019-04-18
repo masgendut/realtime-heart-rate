@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
+import dotenv from 'dotenv';
 import mysql from "promise-mysql";
+
+dotenv.config();
 
 const mysqlConnectionConfig: mysql.ConnectionConfig = {
     host: process.env.DB_HOST || 'localhost',
