@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="ac61dd4f-e6d5-4f07-9b35-efcdfb8b74ee" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/docs/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/openapi.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/docs/openapi.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -18,14 +17,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/app.ts">
+        <entry file="file://$PROJECT_DIR$/src/docs/openapi.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="511">
-              <caret line="38" column="22" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
-              <folding>
-                <element signature="e#631#655#0" expanded="true" />
-                <element signature="e#726#764#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="272">
+              <caret line="239" column="44" selection-start-line="239" selection-start-column="44" selection-end-line="239" selection-end-column="44" />
             </state>
           </provider>
         </entry>
@@ -58,10 +53,10 @@
         <option value="$PROJECT_DIR$/tsconfig.json" />
         <option value="$PROJECT_DIR$/src/docs/swagger.json" />
         <option value="$PROJECT_DIR$/src/helpers/express.ts" />
-        <option value="$PROJECT_DIR$/src/helpers/database.ts" />
-        <option value="$PROJECT_DIR$/src/docs/openapi.json" />
         <option value="$PROJECT_DIR$/src/app.ts" />
         <option value="$PROJECT_DIR$/src/docs/index.ts" />
+        <option value="$PROJECT_DIR$/src/helpers/database.ts" />
+        <option value="$PROJECT_DIR$/src/docs/openapi.json" />
       </list>
     </option>
   </component>
@@ -100,6 +95,12 @@
               <item name="realtime-heart-rate" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="docs" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="realtime-heart-rate" type="b2602c69:ProjectViewProjectNode" />
+              <item name="realtime-heart-rate" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="helpers" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -264,11 +265,25 @@
       <option name="project" value="LOCAL" />
       <updated>1555607709041</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Force HTTPs in all connection">
+      <created>1555608715687</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1555608715687</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Force HTTPs in certain route and make sure .env is loaded">
+      <created>1555608861043</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1555608861043</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="26950000" />
+    <option name="totallyTimeSpent" value="27305000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="23" width="1366" height="677" extended-state="0" />
@@ -311,7 +326,9 @@
     <MESSAGE value="Fix typo onEmitHeartRate" />
     <MESSAGE value="Add Data Table and MomentJS" />
     <MESSAGE value="Add SwaggerUI as docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add SwaggerUI as docs" />
+    <MESSAGE value="Force HTTPs in all connection" />
+    <MESSAGE value="Force HTTPs in certain route and make sure .env is loaded" />
+    <option name="LAST_COMMIT_MESSAGE" value="Force HTTPs in certain route and make sure .env is loaded" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/node_modules/ts-node/dist/bin.js">
@@ -340,13 +357,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="13" column="5" selection-start-line="13" selection-start-column="5" selection-end-line="13" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.env">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="5" column="22" selection-start-line="5" selection-start-column="22" selection-end-line="5" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -406,13 +416,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/helpers/database.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="15" selection-start-line="15" selection-end-line="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/docs/swagger.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2032">
@@ -427,28 +430,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/docs/openapi.json">
+    <entry file="file://$PROJECT_DIR$/.env">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="57" column="31" selection-start-line="57" selection-start-column="31" selection-end-line="57" selection-end-column="31" />
+        <state relative-caret-position="115">
+          <caret line="5" column="22" selection-start-line="5" selection-start-column="22" selection-end-line="5" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/docs/index.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="22" column="19" selection-start-line="22" selection-start-column="19" selection-end-line="22" selection-end-column="19" />
+        <state relative-caret-position="483">
+          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/helpers/database.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-214">
+          <caret line="10" column="11" lean-forward="true" selection-start-line="10" selection-start-column="11" selection-end-line="10" selection-end-column="11" />
+          <folding>
+            <element signature="e#631#659#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="511">
-          <caret line="38" column="22" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
+        <state relative-caret-position="26">
+          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="30" selection-end-column="16" />
           <folding>
             <element signature="e#631#655#0" expanded="true" />
-            <element signature="e#726#764#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/docs/openapi.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="239" column="44" selection-start-line="239" selection-start-column="44" selection-end-line="239" selection-end-column="44" />
         </state>
       </provider>
     </entry>

@@ -228,14 +228,16 @@
             "example": 80
           },
           "emitted_at": {
-            "type": "integer",
-            "format": "int64",
-            "description": "The timestamp when the pulse is emitted by pulse sensor device."
+            "type": "string",
+            "format": "date-time",
+            "description": "The date-time string when the pulse is emitted by pulse sensor device.",
+            "example": "2019-04-01T10:35:00.000Z"
           },
           "created_at": {
-            "type": "integer",
-            "format": "int64",
-            "description": "The timestamp when the pulse is received by the server."
+            "type": "string",
+            "format": "date-time",
+            "description": "The date-time string when the pulse is received by the server.",
+            "example": "2019-04-01T10:35:02.000Z"
           }
         },
         "xml": {
