@@ -1,0 +1,247 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Real-Time Heart Rate APIs",
+    "description": "Back-End APIs for Real-Time Heart Rate application.",
+    "termsOfService": "https://jantung.masgendut.com/terms/",
+    "contact": {
+      "email": "kontak@masgendut.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  },
+  "servers": [
+    {
+      "url": "https://jantung.masgendut.com/"
+    },
+    {
+      "url": "http://jantung.masgendut.com/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "pulse-sensor",
+      "description": "APIs to be consumed by pulse sensor device"
+    }
+  ],
+  "paths": {
+    "/emit-pulse": {
+      "get": {
+        "tags": [
+          "pulse-sensor"
+        ],
+        "summary": "Emit new detected heart rate from pulse sensor",
+        "operationId": "emitPulse",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "query",
+            "description": "Sensor device identification number.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pulse",
+            "in": "query",
+            "description": "Heart rate value detected by pulse sensor.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "description": "The timestamp when the pulse is emitted by pulse sensor device.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "Response": {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Pulse"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "code": 200,
+                  "message": "New pulse data recorded successfully!",
+                  "data": {
+                    "id": 1,
+                    "device_id": 1,
+                    "pulse": 80,
+                    "emitted_at": 1555605620,
+                    "created_at": 1555605630
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Required parameter is not satisfied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              },
+              "application/json - deviceId": {
+                "example": {
+                  "success": false,
+                  "code": 400,
+                  "message": "Parameter \"deviceId\" is required!"
+                }
+              },
+              "application/json - pulse": {
+                "example": {
+                  "success": false,
+                  "code": 400,
+                  "message": "Parameter \"pulse\" is required!"
+                }
+              },
+              "application/json - timestamp": {
+                "example": {
+                  "success": false,
+                  "code": 400,
+                  "message": "Parameter \"timestamp\" is required!"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Device ID is not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                },
+                "example": {
+                  "success": false,
+                  "code": 400,
+                  "message": "Device with ID 1 is not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                },
+                "example": {
+                  "success": false,
+                  "code": 500,
+                  "message": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Response": {
+        "required": [
+          "code",
+          "success"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicating whether a certain operation is successful",
+            "example": true
+          },
+          "code": {
+            "maximum": 404,
+            "minimum": 200,
+            "type": "integer",
+            "description": "The result code of an operation",
+            "format": "int32",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message given after operation"
+          }
+        },
+        "xml": {
+          "name": "Response"
+        }
+      },
+      "Pulse": {
+        "required": [
+          "created_at",
+          "device_id",
+          "emitted_at",
+          "id",
+          "pulse"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Heart rate identification number",
+            "example": 1
+          },
+          "device_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Sensor device identification number",
+            "example": 1
+          },
+          "pulse": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Heart rate value detected by pulse sensor",
+            "example": 80
+          },
+          "emitted_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The timestamp when the pulse is emitted by pulse sensor device."
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The timestamp when the pulse is received by the server."
+          }
+        },
+        "xml": {
+          "name": "Pulse"
+        }
+      }
+    }
+  }
+}

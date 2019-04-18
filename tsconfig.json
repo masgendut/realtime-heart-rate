@@ -11,7 +11,8 @@
      "noImplicitAny": true,
      "noImplicitThis": true,
      "alwaysStrict": true,
-     "esModuleInterop": true
+     "esModuleInterop": true,
+      "resolveJsonModule": true
   },
     "exclude": [
         "node_modules",

@@ -17,42 +17,25 @@ import path from 'path';
 import http from 'http';
 import express from 'express';
 // @ts-ignore
-import secure from 'express-force-https';
-// @ts-ignore
 import favicon from 'express-favicon';
 import { json, urlencoded } from 'body-parser';
 import asyncHandler from 'express-async-handler';
 import SocketIO from 'socket.io';
-import mysql from 'promise-mysql';
 import moment from 'moment';
 
 import dotenv from 'dotenv';
+import docs from './docs';
+import { getDatabase } from "./helpers/database";
+import { forceHTTPS } from "./helpers/express";
+
 dotenv.config();
 
 const app = express();
 const server = new http.Server(app);
 const io = SocketIO(server, {});
 const port = process.env.PORT || 9000;
-const mysqlConnectionConfig: mysql.ConnectionConfig = {
-	host: process.env.DB_HOST || 'localhost',
-	user: process.env.DB_USERNAME || 'root',
-	password: process.env.DB_PASSWORD,
-	database: process.env.DB_NAME || 'heartrate',
-	timezone: 'UTC',
-	dateStrings: ['DATE', 'DATETIME']
-};
 
-async function getDatabase() {
-	try {
-		const connection = await mysql.createConnection(mysqlConnectionConfig);
-		await connection.query("SET time_zone='+00:00';");
-		return connection;
-	} catch (error) {
-		throw error;
-	}
-}
-
-app.use(secure);
+docs(app);
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
@@ -60,6 +43,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get(
 	'/',
+	forceHTTPS(),
 	asyncHandler(async (request, response) => {
 		return response.send(
 			path.join(__dirname, '..', 'public', 'index.html')
@@ -95,9 +79,9 @@ app.get(
 			);
 			const device = devices.find(dev => dev.id === pulse.deviceId);
 			if (device === void 0) {
-				return response.status(400).json({
+				return response.status(404).json({
 					success: false,
-					code: 400,
+					code: 404,
 					message:
 						'Device with ID ' + pulse.deviceId + ' is not found.'
 				});
@@ -115,8 +99,8 @@ app.get(
 			io.emit(WebSocketEvent.onEmitHeartRate, pulse);
 			return response.json({
 				success: true,
-				code: 200,
-				message: 'New pulse data recorded successfully!',
+					code: 200,
+					message: 'New pulse data recorded successfully!',
 				data: pulse
 			});
 		} catch (error) {
