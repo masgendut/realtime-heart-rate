@@ -15,17 +15,10 @@
 
 import {NextFunction, Request, Response} from "express-serve-static-core";
 
-function _forceHTTPS(req: Request, res: Response ,next: NextFunction) {
-    let schema = (req.headers['x-forwarded-proto'] || '');
-    if (Array.isArray(schema)) {
-        schema = schema[0];
-    }
-    schema = schema.toLowerCase();
+export function requireHTTPS(req: Request, res: Response ,next: NextFunction) {
+    const schema: string = (req.headers['x-forwarded-proto'] as string) || '';
     req.headers.host && req.headers.host.indexOf('localhost') < 0 && schema !== 'https'
-        ? res.redirect('https://' + req.headers.host + req.url)
+        ? res.redirect('https://' + req.headers.host + req.originalUrl)
         : next();
 }
 
-export function forceHTTPS() {
-    return _forceHTTPS;
-}

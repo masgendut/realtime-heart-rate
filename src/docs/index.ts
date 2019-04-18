@@ -17,10 +17,10 @@
 import SwaggerUI from 'swagger-ui-express';
 import SwaggerDocument from './openapi.json';
 import { Application } from "express-serve-static-core";
-import {forceHTTPS} from "../helpers/express";
+import { requireHTTPS } from "../helpers/express";
 
 export function docs(app: Application, route: string = '/docs') {
-    app.use(route, forceHTTPS(), SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
+    app.use(route, requireHTTPS, SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
 }
 
 export default docs;

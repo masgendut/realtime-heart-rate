@@ -26,7 +26,7 @@ import moment from 'moment';
 import dotenv from 'dotenv';
 import docs from './docs';
 import { getDatabase } from "./helpers/database";
-import { forceHTTPS } from "./helpers/express";
+import { requireHTTPS } from "./helpers/express";
 
 dotenv.config();
 
@@ -43,7 +43,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get(
 	'/',
-	forceHTTPS(),
+	requireHTTPS,
 	asyncHandler(async (request, response) => {
 		return response.send(
 			path.join(__dirname, '..', 'public', 'index.html')
