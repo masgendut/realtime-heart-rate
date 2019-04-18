@@ -20,7 +20,7 @@ import { Application } from "express-serve-static-core";
 import {forceHTTPS} from "../helpers/express";
 
 export function docs(app: Application, route: string = '/docs') {
-    app.use(route, forceHTTPS(), SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
+    app.use(route, SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
 }
 
 export default docs;

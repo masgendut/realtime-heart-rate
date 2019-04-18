@@ -36,6 +36,7 @@ const io = SocketIO(server, {});
 const port = process.env.PORT || 9000;
 
 docs(app);
+app.use(forceHTTPS());
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
@@ -43,7 +44,6 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get(
 	'/',
-	forceHTTPS(),
 	asyncHandler(async (request, response) => {
 		return response.send(
 			path.join(__dirname, '..', 'public', 'index.html')
