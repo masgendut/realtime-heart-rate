@@ -13,29 +13,115 @@
  * limitations under the License.
  */
 
-import {NextFunction, Request, Response} from "express-serve-static-core";
+import fs from 'fs';
+import path from 'path';
+import {Application, NextFunction, Request, RequestHandler, Response} from "express-serve-static-core";
+import handleAsync from "express-async-handler";
 
-export function requireHTTPS(req: Request, res: Response, next: NextFunction) {
-    const schema: string = ((req.headers['x-forwarded-proto'] as string) || '').toLowerCase();
-    req.headers.host && req.headers.host.indexOf('localhost') < 0 && schema !== 'https'
-        ? res.redirect('https://' + req.headers.host + req.originalUrl)
+const mime: { [k: string]: string } = {
+    '.png': 'image/png',
+    '.ico': 'image/x-icon'
+};
+
+export function favicon(filename: string, pattern: RegExp = /\/favicon\.(png|ico)$/) {
+    filename = path.resolve(filename);
+    return function (request: Request, response: Response, next: NextFunction) {
+        if (pattern.test(request.url)) {
+            const ext = path.extname(filename);
+            response.set('Content-Type', mime[ext]);
+            fs.createReadStream(filename).pipe(response);
+        } else next();
+    };
+}
+
+function addRoute(
+    app: Application,
+    method: HTTP_METHOD,
+    route: string,
+    isRequireHTTPS: boolean,
+    isAsyncHandler: boolean,
+    handler: RequestHandler
+) {
+    const _handler = isAsyncHandler ? handleAsync(handler) : handler;
+    isRequireHTTPS
+        ? app[method](route, requireHTTPS, _handler)
+        : app[method](route, _handler);
+}
+
+export const router = {
+    use(app: Application) {
+        return {
+            get(route: string, isRequireHTTPS: boolean = false) {
+                return {
+                    handle(handler: RequestHandler, isAsyncHandler = true) {
+                        addRoute(app, HTTP_METHOD.GET, route, isRequireHTTPS, isAsyncHandler, handler);
+                    }
+                }
+            },
+            post(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+                return {
+                    handle(handler: RequestHandler, isAsyncHandler = true) {
+                        addRoute(app, HTTP_METHOD.POST, route, isRequireHTTPS, isAsyncHandler, handler);
+                    }
+                }
+            },
+            put(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+                return {
+                    handle(handler: RequestHandler, isAsyncHandler = true) {
+                        addRoute(app, HTTP_METHOD.PUT, route, isRequireHTTPS, isAsyncHandler, handler);
+                    }
+                }
+            },
+            patch(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+                return {
+                    handle(handler: RequestHandler, isAsyncHandler = true) {
+                        addRoute(app, HTTP_METHOD.PATCH, route, isRequireHTTPS, isAsyncHandler, handler);
+                    }
+                }
+            },
+            delete(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+                return {
+                    handle(handler: RequestHandler, isAsyncHandler = true) {
+                        addRoute(app, HTTP_METHOD.DELETE, route, isRequireHTTPS, isAsyncHandler, handler);
+                    }
+                }
+            },
+        }
+    }
+}
+
+export function requireHTTPS(request: Request, response: Response, next: NextFunction) {
+    const schema: string = ((request.headers['x-forwarded-proto'] as string) || '').toLowerCase();
+    request.headers.host && request.headers.host.indexOf('localhost') < 0 && schema !== 'https'
+        ? response.redirect('https://' + request.headers.host + request.originalUrl)
         : next();
 }
 
-export function notFound(req: Request, res: Response) {
-    res.status(404);
+export function notFound(request: Request, response: Response) {
+    response.status(404);
 
-    if (req.accepts('html')) {
-        return res.render('404', { url: req.url });
+    if (request.accepts('html')) {
+        return response.render('404', { url: request.url });
     }
 
-    if (req.accepts('json')) {
-        return res.json({
+    if (request.accepts('json')) {
+        return response.json({
             success: false,
             code: 404,
             message: 'The page you are looking for is not found'
         });
     }
 
-    res.type('txt').send('The page you are looking for is not found.');
+    return response.type('txt').send('The page you are looking for is not found.');
+}
+
+export default { favicon, router, requireHTTPS, notFound };
+
+
+enum HTTP_METHOD {
+    GET = 'get',
+    POST = 'post',
+    PUT = 'put',
+    PATCH = 'patch',
+    DELETE = 'delete'
 }

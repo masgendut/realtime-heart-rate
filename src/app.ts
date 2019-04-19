@@ -13,48 +13,49 @@
  * limitations under the License.
  */
 
+// Import dependencies
 import path from 'path';
 import http from 'http';
 import express from 'express';
-// @ts-ignore
-import favicon from 'express-favicon';
 import { json, urlencoded } from 'body-parser';
-import asyncHandler from 'express-async-handler';
 import SocketIO from 'socket.io';
 import moment from 'moment';
 
+// Import internal functions
 import { getConfig } from './config';
 import { docs } from './docs';
 import { getDatabase } from "./helpers/database";
-import { requireHTTPS, notFound } from "./helpers/express";
+import { router, favicon, notFound } from "./helpers/express";
 import { IDeviceModel } from './models/IDeviceModel';
 import { IPulseModel } from './models/IPulseModel';
 
+// Declare and define variables
 const config = getConfig();
 const app = express();
+const onApp = router.use(app);
 const server = new http.Server(app);
 const io = SocketIO(server, {});
 const port = config.PORT || process.env.PORT || 9000;
 
-docs(app);
-app.use(json());
-app.use(urlencoded({ extended: false }));
-app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Configure HTTP Server
+docs(app); // Show Swagger UI as documentation on '/docs' path
+app.use(json()); // Use JSON parser to parse JSON body as JavaScript object
+app.use(urlencoded({ extended: false })); // Parse body as URL Encoded format
 
-app.get(
-	'/',
-	requireHTTPS,
-	asyncHandler(async (request, response) => {
+// Let HTTP Server serve front-end on "public" folder
+app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico'))); // Serve favicon
+app.use(express.static(path.join(__dirname, '..', 'public'))); // Static serve 'public' folder
+onApp.get('/', true) // Serve front-end's "index.html"
+	.handle(async (request, response) => {
 		return response.send(
 			path.join(__dirname, '..', 'public', 'index.html')
 		);
-	})
-);
+	});
 
-app.get(
-	'/emit-pulse',
-	asyncHandler(async (request, response) => {
+// HTTP REST API to be called by pulse sensor device
+// whenever pulse sensor device should emit a new pulse value
+onApp.get('/emit-pulse')
+	.handle(async (request, response) => {
 		const requiredField = ['deviceId', 'pulse', 'timestamp'];
 		for (const field of requiredField) {
 			if (!request.query[field]) {
@@ -100,8 +101,8 @@ app.get(
 			io.emit(WebSocketEvent.onEmitHeartRate, pulse);
 			return response.json({
 				success: true,
-					code: 200,
-					message: 'New pulse data recorded successfully!',
+				code: 200,
+				message: 'New pulse data recorded successfully!',
 				data: pulse
 			});
 		} catch (error) {
@@ -113,10 +114,11 @@ app.get(
 			});
 		}
 	})
-);
 
+// Handle not found error
 app.use(notFound);
 
+// Configure web socket for front-end
 io.on('connection', function(socket) {
 	socket.emit(
 		WebSocketEvent.onConnection,
@@ -149,10 +151,12 @@ io.on('connection', function(socket) {
 	});
 });
 
+// Start server
 server.listen(port, () => {
 	console.log('Real time server started on port ' + port);
 });
 
+// Enum of Web Socket events
 enum WebSocketEvent {
 	onConnection = 'onConnection',
 	onEmitHeartRate = 'onEmitHeartRate',

@@ -36,3 +36,5 @@ export async function getDatabase() {
         throw error;
     }
 }
+
+export default { getDatabase }
