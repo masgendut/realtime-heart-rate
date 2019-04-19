@@ -109,27 +109,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Response"
-                }
-              },
-              "application/json - deviceId": {
+                },
                 "example": {
                   "success": false,
                   "code": 400,
                   "message": "Parameter \"deviceId\" is required!"
-                }
-              },
-              "application/json - pulse": {
-                "example": {
-                  "success": false,
-                  "code": 400,
-                  "message": "Parameter \"pulse\" is required!"
-                }
-              },
-              "application/json - timestamp": {
-                "example": {
-                  "success": false,
-                  "code": 400,
-                  "message": "Parameter \"timestamp\" is required!"
                 }
               }
             }
@@ -193,6 +177,10 @@
           "message": {
             "type": "string",
             "description": "Optional message given after operation"
+          },
+          "data": {
+            "type": "object",
+            "description": "Optional data given after operation"
           }
         },
         "xml": {

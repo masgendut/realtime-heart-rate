@@ -15,10 +15,27 @@
 
 import {NextFunction, Request, Response} from "express-serve-static-core";
 
-export function requireHTTPS(req: Request, res: Response ,next: NextFunction) {
+export function requireHTTPS(req: Request, res: Response, next: NextFunction) {
     const schema: string = ((req.headers['x-forwarded-proto'] as string) || '').toLowerCase();
     req.headers.host && req.headers.host.indexOf('localhost') < 0 && schema !== 'https'
         ? res.redirect('https://' + req.headers.host + req.originalUrl)
         : next();
 }
 
+export function notFound(req: Request, res: Response) {
+    res.status(404);
+
+    if (req.accepts('html')) {
+        return res.render('404', { url: req.url });
+    }
+
+    if (req.accepts('json')) {
+        return res.json({
+            success: false,
+            code: 404,
+            message: 'The page you are looking for is not found'
+        });
+    }
+
+    res.type('txt').send('The page you are looking for is not found.');
+}

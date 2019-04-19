@@ -23,17 +23,18 @@ import asyncHandler from 'express-async-handler';
 import SocketIO from 'socket.io';
 import moment from 'moment';
 
-import dotenv from 'dotenv';
-import docs from './docs';
+import { getConfig } from './config';
+import { docs } from './docs';
 import { getDatabase } from "./helpers/database";
-import { requireHTTPS } from "./helpers/express";
+import { requireHTTPS, notFound } from "./helpers/express";
+import { IDeviceModel } from './models/IDeviceModel';
+import { IPulseModel } from './models/IPulseModel';
 
-dotenv.config();
-
+const config = getConfig();
 const app = express();
 const server = new http.Server(app);
 const io = SocketIO(server, {});
-const port = process.env.PORT || 9000;
+const port = config.PORT || process.env.PORT || 9000;
 
 docs(app);
 app.use(json());
@@ -114,6 +115,8 @@ app.get(
 	})
 );
 
+app.use(notFound);
+
 io.on('connection', function(socket) {
 	socket.emit(
 		WebSocketEvent.onConnection,
@@ -158,19 +161,4 @@ enum WebSocketEvent {
 	onRequestHeartRates = 'onRequestHeartRates',
 	onRetrieveHeartRates = 'onRetrieveHeartRates',
 	onError = 'onError'
-}
-
-interface IDeviceModel {
-	id?: number;
-	name: string;
-	created_at?: string | Date;
-	updated_at?: string | Date;
-}
-
-interface IPulseModel {
-	id?: number;
-	deviceId: number;
-	pulse: number;
-	emitted_at: string | Date;
-	created_at?: string | Date;
 }
