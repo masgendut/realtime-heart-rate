@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ac61dd4f-e6d5-4f07-9b35-efcdfb8b74ee" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/helpers/database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/helpers/database.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/helpers/express.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/helpers/express.ts" afterDir="false" />
-    </list>
+    <list default="true" id="ac61dd4f-e6d5-4f07-9b35-efcdfb8b74ee" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -175,7 +169,7 @@
       <workItem from="1553777784215" duration="2868000" />
       <workItem from="1555609106756" duration="56000" />
       <workItem from="1555609300035" duration="754000" />
-      <workItem from="1555698040508" duration="3793000" />
+      <workItem from="1555698040508" duration="3847000" />
     </task>
     <task id="LOCAL-00001" summary="Add front-end page">
       <created>1553760184343</created>
@@ -331,11 +325,18 @@
       <option name="project" value="LOCAL" />
       <updated>1555698992188</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Add better router and remove express-favicon in favor of internal favicon processor">
+      <created>1555701870744</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1555701870745</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="31939000" />
+    <option name="totallyTimeSpent" value="31993000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1366" height="677" extended-state="0" />
@@ -386,7 +387,8 @@
     <MESSAGE value="Remove strong from docs link" />
     <MESSAGE value="Add toLowerCase in protocol scheme" />
     <MESSAGE value="Add not found handler and modify swagger example" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add not found handler and modify swagger example" />
+    <MESSAGE value="Add better router and remove express-favicon in favor of internal favicon processor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add better router and remove express-favicon in favor of internal favicon processor" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/node_modules/ts-node/dist/bin.js">
