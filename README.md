@@ -24,13 +24,13 @@ npm install
 To start the program, run the `start` script using NPM.
 
 ```bash
-npm start
+npm run start
 ```
 
 If you want the program to automatically re-started when you save the source files, run the `dev` script using NPM. This will be useful when you are trying to develop this program.
 
 ```bash
-npm dev
+npm run dev
 ```
 
 ## Configuration
