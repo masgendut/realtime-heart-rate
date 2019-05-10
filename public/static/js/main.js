@@ -188,7 +188,10 @@ const serverURI =
 	'/';
 
 const socket = io(serverURI, {
-	autoConnect: true
+	autoConnect: true,
+	transport: [
+		'websocket'
+	]
 });
 
 function onConnection(message) {
