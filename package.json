@@ -1,9 +1,9 @@
 {
-  "name": "realtime-pulse-backend",
+  "name": "realtime-heart-rate",
   "version": "1.0.0",
   "description": "Back End for Real-Time Pulse Sensor monitoring.",
   "main": "lib/app.js",
-  "repository": "git@github.com:danang-id/realtime-pulse-backend.git",
+  "repository": "git@github.com:danang-id/realtime-heart-rate.git",
   "author": "Danang Galuh Tegar Prasetyo <danang.galuh.t@gmail.com> (https://github.com/danang-id)",
   "license": "Apache-2.0",
   "private": true,

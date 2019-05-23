@@ -34,7 +34,7 @@ const config = getConfig();
 const app = express();
 const onApp = router.use(app);
 const server = new http.Server(app);
-const io = SocketIO(server, {});
+const io = SocketIO(server);
 const port = config.PORT || process.env.PORT || 9000;
 
 // Configure HTTP Server
@@ -67,7 +67,7 @@ onApp.get('/emit-pulse')
 			}
 		}
 		let pulse: IPulseModel = {
-			deviceId: parseInt(request.query.deviceId),
+			device_id: parseInt(request.query.deviceId),
 			pulse: parseFloat(request.query.pulse),
 			emitted_at: moment(new Date(parseInt(request.query.timestamp)))
 				.utc()
@@ -77,15 +77,15 @@ onApp.get('/emit-pulse')
 			const database = await getDatabase();
 			const devices: IDeviceModel[] = await database.query(
 				'SELECT * FROM devices WHERE ?',
-				{ id: pulse.deviceId }
+				{ id: pulse.device_id }
 			);
-			const device = devices.find(dev => dev.id === pulse.deviceId);
+			const device = devices.find(dev => dev.id === pulse.device_id);
 			if (device === void 0) {
 				return response.status(404).json({
 					success: false,
 					code: 404,
 					message:
-						'Device with ID ' + pulse.deviceId + ' is not found.'
+						'Device with ID ' + pulse.device_id + ' is not found.'
 				});
 			}
 			const { insertId } = await database.query(
@@ -141,7 +141,7 @@ io.on('connection', function(socket) {
 			const database = await getDatabase();
 			const pulses: IPulseModel[] = await database.query(
 				'SELECT * FROM pulses WHERE ?',
-				{ deviceId }
+				{ device_id: deviceId }
 			);
 			await database.end();
 			emit(WebSocketEvent.onRetrieveHeartRates, pulses);

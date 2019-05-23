@@ -189,9 +189,7 @@ const serverURI =
 
 const socket = io(serverURI, {
 	autoConnect: true,
-	transport: [
-		'websocket'
-	]
+	transports: ['websocket']
 });
 
 function onConnection(message) {
@@ -202,7 +200,7 @@ function onConnection(message) {
 function onEmitHeartRate(pulse) {
 	if (
 		selectedDeviceId !== null &&
-		parseInt(pulse.deviceId) === selectedDeviceId
+		parseInt(pulse.device_id) === selectedDeviceId
 	) {
 		lastPulseReceived = new Date();
 		pulse.emitted_at = new Date(pulse.emitted_at);
