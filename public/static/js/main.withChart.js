@@ -20,10 +20,15 @@ const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
 	'.heart-rate-emit-time'
 );
+const changeChartButtonElement = document.querySelector('#change-chart-button');
+const heartRateChartElement = document.querySelector('#heart-rate-chart');
 const tableJQueryElement = $('.heart-rate-table');
 copyrightElement.innerHTML =
 	'Copyright &copy; ' + new Date().getFullYear() + ' Mokhamad Mustaqim';
 
+let chart = null;
+let activeChart = 0;
+let chartData = [];
 let datatable = null;
 let lastPulseReceived = new Date();
 let devices = [];
@@ -35,6 +40,76 @@ function addNewOption(value, option) {
 	return '<option value="' + value + '">' + option + '</option>';
 }
 
+function initialiseChart() {
+	changeChartButtonElement.innerHTML = 'View Time Delay Chart';
+	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	chart = new Chart(heartRateChartElement, {
+		type: 'line',
+		data: {
+			labels: ['', '', '', '', '', ''],
+			datasets: [
+				{
+					label: 'heart rate',
+					data: [0, 0, 0, 0, 0, 0],
+					backgroundColor: 'rgba(255, 255, 255, 0)',
+					borderColor: 'rgba(54, 162, 235, 1)',
+					borderWidth: 1
+				}
+			]
+		},
+		options: {
+			scales: {
+				yAxes: [
+					{
+						ticks: {
+							beginAtZero: true
+						}
+					}
+				]
+			}
+		}
+	});
+	changeChartButtonElement.style.display = 'block';
+}
+
+function updateChart() {
+	chart.data.datasets[0].data = chartData[activeChart];
+	chart.update();
+}
+
+function switchChart() {
+	activeChart = activeChart === 0 ? 1 : 0;
+	changeChartButtonElement.innerHTML =
+		activeChart === 0 ? 'View Time Delay Chart' : 'View Heart Rate Chart';
+	if (activeChart === 0) {
+		changeChartButtonElement.classList.add('btn-danger');
+		changeChartButtonElement.classList.remove('btn-info');
+	} else {
+		changeChartButtonElement.classList.add('btn-info');
+		changeChartButtonElement.classList.remove('btn-danger');
+	}
+	chart.data.datasets[0].label =
+		activeChart === 0 ? 'heart rate' : 'seconds from device';
+	chart.data.datasets[0].borderColor =
+		activeChart === 0 ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 99, 132, 1)';
+	updateChart();
+}
+
+function pushChartData(heartRate, timeDelay) {
+	for (let x = 0; x < 2; x++) {
+		for (let y = 5; y > 0; y--) {
+			chartData[x][y] = chartData[x][y - 1];
+		}
+	}
+	chartData[0][0] = heartRate;
+	chartData[1][0] = timeDelay;
+	updateChart();
+}
+
+function clearChartData() {
+	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	updateChart();
+}
 
 function addDataTableRows(rows) {
 	if (!Array.isArray(rows)) {
@@ -135,6 +210,7 @@ function onEmitHeartRate(pulse) {
 		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML =
 			transportDelay.toString() + ' seconds from device';
+		pushChartData(pulse.pulse, transportDelay);
 		const row = [
 			pulse.pulse,
 			moment(pulse.emitted_at).format('lll'),
@@ -237,6 +313,7 @@ deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
+	clearChartData();
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);
@@ -246,6 +323,9 @@ deviceSelectElement.addEventListener('change', function() {
 		onResponseEvent
 	);
 });
+changeChartButtonElement.addEventListener('click', function() {
+	switchChart();
+});
 
 function main() {
 	setDataTableText('Please select a device first.');
@@ -253,12 +333,14 @@ function main() {
 		AlertType.Warning,
 		'Connecting to Real-Time server via Web Socket...'
 	);
+	initialiseChart();
 	socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
 	setInterval(function() {
 		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
 		if (timeDiff > 3000) {
 			heartRateElement.innerHTML = '0';
 			heartRateEmitTimeElement.innerHTML = '';
+			pushChartData(0, 0);
 		}
 	}, 1000);
 }
