@@ -344,13 +344,20 @@ function onResponseEvent(event, data) {
 socket.on(WebSocketEvent.onConnection, onConnection);
 socket.on(WebSocketEvent.onEmitHeartRate, onEmitHeartRate);
 socket.on('error', function() {
-	onError(new Error('An unknown error happen on Web Socket.'));
+	onError(new Error('An unknown error happen on Real-Time server connection.'));
 });
 socket.on('connect_failed', function() {
-	onError(new Error('Failed to connect to Web Socket server!'));
+	onError(new Error('Failed to connect to Real-Time server!'));
 });
 socket.on('disconnect', function() {
-	onWarning(new Error('Disconnected from Web Socket server! Retring to connect...'));
+	onWarning(new Error('Disconnected from Real-Time server! Retrying to connect...'));
+});
+socket.on('reconnect_attempt', () => {
+	socket.io.opts.transports = ['polling', 'websocket'];
+	const transportName = socket.io.engine.transport.name === 'websocket' 
+		? 'Web Socket'
+		: 'HTTP Long-Polling';
+	onWarning(new Error('Establishing connection to Real-Time server via ' + transportName + '...'));
 });
 deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
@@ -371,11 +378,11 @@ changeChartButtonElement.addEventListener('click', function() {
 });
 
 function main() {
+	const transportName = socket.io.engine.transport.name === 'websocket' 
+		? 'Web Socket'
+		: 'HTTP Long-Polling';
+	onWarning(new Error('Establishing connection to Real-Time server via ' + transportName + '...'));
 	setDataTableText('Please select a device first.');
-	showAlert(
-		AlertType.Warning,
-		'Connecting to Real-Time server via Web Socket...'
-	);
 	initialiseChart();
 	setInterval(function() {
 		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();

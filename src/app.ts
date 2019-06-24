@@ -121,11 +121,18 @@ app.use(notFound);
 
 // Configure web socket for front-end
 io.on('connection', function(socket) {
-	const transport = socket.conn.transport.name === 'websocket' ? 'Web Socket' : 'HTTP Long-Polling'
+	const transportName = socket.conn.transport.name === 'websocket' ? 'Web Socket' : 'HTTP Long-Polling';
 	socket.emit(
 		WebSocketEvent.onConnection,
-		'Connected to Real-Time server using ' + transport + '.'
+		'Connection to Real-Time server is established using ' + transportName + '.'
 	);
+	socket.conn.on('upgrade', function(transport) {
+		const upgradeTransportName = transport.name === 'websocket' ? 'Web Socket' : 'HTTP Long-Polling';
+		socket.emit(
+			WebSocketEvent.onConnection,
+			'Connection to Real-Time server is upgraded using ' + upgradeTransportName + '.'
+		);
+	})
 	socket.on(WebSocketEvent.onAddDevice, async (name, emit) => {
 		try {
 			const database = await getDatabase();
