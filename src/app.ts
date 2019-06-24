@@ -105,12 +105,14 @@ onApp.get('/emit-pulse')
 				message: 'New pulse data recorded successfully!',
 				data: pulse
 			});
-		} catch (error) {
+		} catch (e) {
+			const message = e.message || e.sqlMessage || 'Unkown server error.';
+			const error = { message };
 			return response.status(500).json({
 				success: false,
 				code: 500,
-				message: error.message,
-				error
+				message: message,
+				error: e
 			});
 		}
 	})
@@ -132,7 +134,9 @@ io.on('connection', function(socket) {
 			);
 			await database.end();
 			emit(WebSocketEvent.onRetrieveDevices, devices);
-		} catch (error) {
+		} catch (e) {
+			const message = e.info.msg || e.warning.msg || e.message || e.sqlMessage || 'Unkown server error.';
+			const error = { message };
 			emit(WebSocketEvent.onError, error);
 		}
 	});
@@ -145,7 +149,9 @@ io.on('connection', function(socket) {
 			);
 			await database.end();
 			emit(WebSocketEvent.onRetrieveHeartRates, pulses);
-		} catch (error) {
+		} catch (e) {
+			const message = e.info.msg || e.warning.msg || e.message || e.sqlMessage || 'Unkown server error.';
+			const error = { message };
 			emit(WebSocketEvent.onError, error);
 		}
 	});
