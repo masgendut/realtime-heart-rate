@@ -343,6 +343,7 @@ function onResponseEvent(event, data) {
 
 socket.on(WebSocketEvent.onConnection, onConnection);
 socket.on(WebSocketEvent.onEmitHeartRate, onEmitHeartRate);
+socket.on(WebSocketEvent.onRetrieveDevices, onRetrieveDevices);
 socket.on('error', function() {
 	onError(new Error('An unknown error happen on Real-Time server connection.'));
 });
