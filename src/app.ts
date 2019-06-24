@@ -106,8 +106,7 @@ onApp.get('/emit-pulse')
 				data: pulse
 			});
 		} catch (e) {
-			const message = e.message || e.sqlMessage || 'Unkown server error.';
-			const error = { message };
+			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
 			return response.status(500).json({
 				success: false,
 				code: 500,
@@ -126,6 +125,57 @@ io.on('connection', function(socket) {
 		WebSocketEvent.onConnection,
 		'Connected to Real-Time server using Web Socket.'
 	);
+	socket.on(WebSocketEvent.onAddDevice, async (name, emit) => {
+		try {
+			const database = await getDatabase();
+			const { affectedRows  } = await database.query(
+				'INSERT INTO devices SET ?',
+				{ name }
+			);
+			const success = parseInt(affectedRows) > 0;
+			const message = success
+				? 'Device "' + name + '" has been successfully added!'
+				: 'Failed to add "' + name + '". ';
+			await database.end();
+			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
+		} catch (e) {
+			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
+			emit(WebSocketEvent.onAfterAddRemoveDevice, { 
+				success: false,
+				message: 'Failed to add "' + name + '". ' + message 
+			});
+		}
+	});
+	socket.on(WebSocketEvent.onRemoveDevice, async ({ id, name }, emit) => {
+		try {
+			const database = await getDatabase();
+			const pulses: IPulseModel[] = await database.query(
+				'SELECT * FROM pulses WHERE ?',
+				{ device_id: id }
+			);
+			const pulseResult = await database.query(
+				'DELETE FROM pulses WHERE ?',
+				{ device_id: id }
+			);
+			const deviceResult = await database.query(
+				'DELETE FROM devices WHERE ?',
+				{ id }
+			);
+			const success = parseInt(pulseResult.affectedRows) === pulses.length 
+				&& parseInt(deviceResult.affectedRows) > 0;
+			const message = success
+				? 'Device "' + name + '" has been successfully removed!'
+				: 'Failed to remove "' + name + '". ';
+			await database.end();
+			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
+		} catch (e) {
+			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
+			emit(WebSocketEvent.onAfterAddRemoveDevice, { 
+				success: false,
+				message: 'Failed to remove "' + name + '". ' + message 
+			});
+		}
+	});
 	socket.on(WebSocketEvent.onRequestDevices, async emit => {
 		try {
 			const database = await getDatabase();
@@ -135,7 +185,7 @@ io.on('connection', function(socket) {
 			await database.end();
 			emit(WebSocketEvent.onRetrieveDevices, devices);
 		} catch (e) {
-			const message = e.info.msg || e.warning.msg || e.message || e.sqlMessage || 'Unkown server error.';
+			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
 			const error = { message };
 			emit(WebSocketEvent.onError, error);
 		}
@@ -150,7 +200,7 @@ io.on('connection', function(socket) {
 			await database.end();
 			emit(WebSocketEvent.onRetrieveHeartRates, pulses);
 		} catch (e) {
-			const message = e.info.msg || e.warning.msg || e.message || e.sqlMessage || 'Unkown server error.';
+			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
 			const error = { message };
 			emit(WebSocketEvent.onError, error);
 		}
@@ -165,6 +215,9 @@ server.listen(port, () => {
 // Enum of Web Socket events
 enum WebSocketEvent {
 	onConnection = 'onConnection',
+	onAddDevice = 'onAddDevice',
+	onRemoveDevice = 'onRemoveDevice',
+	onAfterAddRemoveDevice = 'onAfterAddRemoveDevice',
 	onEmitHeartRate = 'onEmitHeartRate',
 	onRequestDevices = 'onRequestDevices',
 	onRetrieveDevices = 'onRetrieveDevices',

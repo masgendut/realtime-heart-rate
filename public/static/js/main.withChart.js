@@ -32,7 +32,12 @@ const heartRateEmitTimeElement = document.querySelector(
 );
 const changeChartButtonElement = document.querySelector('#change-chart-button');
 const heartRateChartElement = document.querySelector('#heart-rate-chart');
+const removeDeviceButtonElement = document.querySelector('#remove-device-button');
+const addDeviceNameElement = document.querySelector('#add-device-name');
+const removeDeviceNameElement = document.querySelector('#remove-device-name');
 const tableJQueryElement = $('.heart-rate-table');
+const addModalJQueryElement = $('#add-modal');
+const removeModalJQueryElement = $('#remove-modal');
 
 let chart = null;
 let activeChart = 0;
@@ -166,9 +171,43 @@ function showAlert(type, message, isReplace) {
 function getSelectedDevice() {
 	return devices.find(dev => dev.id === selectedDeviceId);
 }
+function onShowAddDevice() {
+	addDeviceNameElement.value = '';
+	addModalJQueryElement.modal('show');
+}
+
+function onShowRemoveDevice() {
+	const device = getSelectedDevice();
+	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device.id + ']';
+	removeModalJQueryElement.modal('show');
+}
+
+function onAddDevice() {
+	const name = addDeviceNameElement.value;
+	addModalJQueryElement.modal('hide');
+	if (!name || name === '') {
+		showAlert(AlertType.Danger, 'Failed to add device. Device name cannot be empty.');
+		return;
+	}
+	showAlert(AlertType.Info, 'Adding device "' + name + '"...', true);
+	socket.emit(WebSocketEvent.onAddDevice, name, onResponseEvent);
+}
+
+function onRemoveDevice() {
+	const device = getSelectedDevice();
+	removeModalJQueryElement.modal('hide');
+	showAlert(AlertType.Info, 'Removing device "' + device.name + '"...', true);
+	socket.emit(WebSocketEvent.onRemoveDevice, { 
+		id: device.id,
+		name: device.name	
+	}, onResponseEvent);
+}
 
 const WebSocketEvent = {
 	onConnection: 'onConnection',
+	onAddDevice: 'onAddDevice',
+	onRemoveDevice: 'onRemoveDevice',
+	onAfterAddRemoveDevice: 'onAfterAddRemoveDevice',
 	onEmitHeartRate: 'onEmitHeartRate',
 	onRequestDevices: 'onRequestDevices',
 	onRetrieveDevices: 'onRetrieveDevices',
@@ -190,6 +229,18 @@ function onConnection(message) {
 	console.log(message);
 	showAlert(AlertType.Success, message, true);
 	socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
+}
+
+function onAfterAddRemoveDevice(data) {
+	const { success, message } = data;
+	console.log(message);
+	showAlert(success ? AlertType.Success : AlertType.Danger, message, true);
+	if (success) {
+		setDataTableText('Please select a device first.');
+		removeDeviceButtonElement.disabled = true;
+		removeDeviceButtonElement.innerHTML = 'Remove Device';
+		socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
+	}
 }
 
 function onEmitHeartRate(pulse) {
@@ -232,9 +283,13 @@ function onRetrieveDevices(_devices) {
 		deviceSelectHTML =
 			deviceSelectHTML + addNewOption(device.id, device.name);
 	}
+	const firstOption = devices.length > 0
+		? 'Select a device...'
+		: 'No device available.'
 	deviceSelectElement.innerHTML =
-		'<option selected disabled>Select a device...</option>' +
+		'<option selected disabled>' + firstOption + '</option>' +
 		deviceSelectHTML;
+	deviceSelectElement.disabled = devices.length === 0;
 }
 
 function onRetrieveHeartRates(pulses) {
@@ -246,9 +301,9 @@ function onRetrieveHeartRates(pulses) {
 	}
 	if (pulses.length === 0) {
 		setDataTableText(
-			'There are no any heart rates data for ' +
-				getSelectedDevice().name +
-				'.'
+			'There are no any heart rates data for ' 
+				+ getSelectedDevice().name + ' [ID: ' 
+				+ getSelectedDevice().id + '].'
 		);
 		tableData = [];
 		return;
@@ -271,6 +326,9 @@ function onError(error) {
 
 function onResponseEvent(event, data) {
 	switch (event) {
+		case WebSocketEvent.onAfterAddRemoveDevice:
+			onAfterAddRemoveDevice(data);
+			break;
 		case WebSocketEvent.onRetrieveDevices:
 			onRetrieveDevices(data);
 			break;

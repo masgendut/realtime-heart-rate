@@ -49,9 +49,13 @@ limitations under the License.
 
         <div class="row">
             <div class="col-lg-4">
-                <select class="custom-select device-select" style="margin-bottom: 20px;">
+                <select disabled class="custom-select device-select" style="margin-bottom: 20px;">
                     <option selected disabled>Getting device data...</option>
                 </select>
+                <div>
+                    <button id="remove-device-button" disabled type="button" class="btn btn-danger btn-sm" onclick="onShowRemoveDevice()">Remove Device</button>
+                    <button type="button" class="btn btn-primary btn-sm" style="float: right" onclick="onShowAddDevice()">Add Device</button>
+                </div>
                 <br/>
                 <div class="card heart-rate-card mb-4 shadow">
                     <div class="card-header">
@@ -61,9 +65,6 @@ limitations under the License.
                         <h1 class="card-title pricing-card-title"><span class="heart-rate">0</span> <small class="text-muted">bpm</small></h1>
                         <p class="heart-rate-emit-time"></p>
                     </div>
-                </div>
-                <div class="float-right" style="margin-bottom: 15px;">
-                    <button id="change-chart-button" type="button" class="btn btn-danger btn-sm" style="display: none;"></button>
                 </div>
                 <!-- <canvas id="heart-rate-chart" class="chart heart-rate-chart" width="95%" aspectRatio=2 responsive="true"></canvas> -->
                 <br />
@@ -85,10 +86,64 @@ limitations under the License.
             <div class="row">
                 <div class="col-12 col-md">
                     <img class="mb-2" src="/static/img/icon.png" alt="" width="24" height="24">
-                    <small class="d-block mb-3 text-muted copyright"></small>
+                    <small class="d-block mb-3 text-muted copyright">
+                        Copyright &copy; 
+                        <script lang="js">document.write((new Date()).getFullYear());</script> 
+                        Mokhamad Mustaqim. All right reserved.<br/>
+                        This program is available in form of source code and is licensed by Apache-2.0 license.
+                    </small>
                 </div>
             </div>
         </footer>
+    </div>
+
+    <!-- Add Device Modal -->
+    <div class="modal fade" id="add-modal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Device</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group row">
+                            <label for="add-device-name" class="col-sm-2 col-form-label">Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="add-device-name" required placeholder="Device Name">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="onAddDevice()">Add Device</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Device Modal -->
+    <div class="modal fade" id="remove-modal" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Remove Device</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure to remove <span id="remove-device-name"></span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="onRemoveDevice()">Remove Device</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="//code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -98,6 +153,7 @@ limitations under the License.
     <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js" integrity="sha256-oSgtFCCmHWRPQ/JmR4OoZ3Xke1Pw4v50uh6pLcu+fIc=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
+    <script src="static/js/preventFormEnter.js"></script>
     <script src="static/js/main.js"></script>
     <script lang="js">
         (function() {
