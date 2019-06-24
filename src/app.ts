@@ -121,9 +121,10 @@ app.use(notFound);
 
 // Configure web socket for front-end
 io.on('connection', function(socket) {
+	const transport = socket.conn.transport.name === 'websocket' ? 'Web Socket' : 'HTTP Long-Polling'
 	socket.emit(
 		WebSocketEvent.onConnection,
-		'Connected to Real-Time server using Web Socket.'
+		'Connected to Real-Time server using ' + transport + '.'
 	);
 	socket.on(WebSocketEvent.onAddDevice, async (name, emit) => {
 		try {
