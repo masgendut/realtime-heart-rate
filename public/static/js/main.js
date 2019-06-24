@@ -107,10 +107,7 @@ const serverURI = window.location.protocol
 	+ window.location.port 
 	+ '/';
 
-const socket = io(serverURI, {
-	autoConnect: true,
-	transports: ['websocket']
-});
+const socket = io(serverURI, { autoConnect: true });
 
 function onConnection(message) {
 	console.log(message);
