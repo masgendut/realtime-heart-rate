@@ -144,8 +144,14 @@ io.on('connection', function(socket) {
 			const message = success
 				? 'Device "' + name + '" has been successfully added!'
 				: 'Failed to add "' + name + '". ';
+			const devices: IDeviceModel[] = await database.query(
+				'SELECT * FROM devices'
+			);
 			await database.end();
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
+			if (success) {
+				emit(WebSocketEvent.onRetrieveDevices, devices);
+			}
 		} catch (e) {
 			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { 
@@ -174,8 +180,14 @@ io.on('connection', function(socket) {
 			const message = success
 				? 'Device "' + name + '" has been successfully removed!'
 				: 'Failed to remove "' + name + '". ';
+			const devices: IDeviceModel[] = await database.query(
+				'SELECT * FROM devices'
+			);
 			await database.end();
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
+			if (success) {
+				emit(WebSocketEvent.onRetrieveDevices, devices);
+			}
 		} catch (e) {
 			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { 
