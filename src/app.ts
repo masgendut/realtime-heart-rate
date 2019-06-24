@@ -150,7 +150,7 @@ io.on('connection', function(socket) {
 			await database.end();
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
 			if (success) {
-				emit(WebSocketEvent.onRetrieveDevices, devices);
+				socket.broadcast.emit(WebSocketEvent.onRetrieveDevices, devices);
 			}
 		} catch (e) {
 			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
@@ -186,7 +186,7 @@ io.on('connection', function(socket) {
 			await database.end();
 			emit(WebSocketEvent.onAfterAddRemoveDevice, { success, message });
 			if (success) {
-				emit(WebSocketEvent.onRetrieveDevices, devices);
+				socket.broadcast.emit(WebSocketEvent.onRetrieveDevices, devices);
 			}
 		} catch (e) {
 			const message = e.message || 'Database Error: ' + e.sqlMessage || 'Unkown server error.';
