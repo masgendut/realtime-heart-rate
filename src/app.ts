@@ -16,26 +16,28 @@
 // Import dependencies
 import path from 'path';
 import http from 'http';
+import dotenv from 'dotenv';
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
 import SocketIO from 'socket.io';
 import moment from 'moment';
 
 // Import internal functions
-import { getConfig } from './config';
 import { docs } from './docs';
 import { getDatabase } from "./helpers/database";
 import { router, favicon, notFound } from "./helpers/express";
 import { IDeviceModel } from './models/IDeviceModel';
 import { IPulseModel } from './models/IPulseModel';
 
+// Import .env config to process.env variable
+dotenv.config();
+
 // Declare and define variables
-const config = getConfig();
 const app = express();
 const onApp = router.use(app);
 const server = new http.Server(app);
 const io = SocketIO(server);
-const port = config.PORT || process.env.PORT || 9000;
+const port = process.env.PORT || 9000;
 
 // Configure HTTP Server
 docs(app); // Show Swagger UI as documentation on '/docs' path
