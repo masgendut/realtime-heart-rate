@@ -32,6 +32,7 @@ const heartRateEmitTimeElement = document.querySelector(
 );
 const changeChartButtonElement = document.querySelector('#change-chart-button');
 const heartRateChartElement = document.querySelector('#heart-rate-chart');
+const addDeviceButtonElement = document.querySelector('#add-device-button');
 const removeDeviceButtonElement = document.querySelector('#remove-device-button');
 const addDeviceNameElement = document.querySelector('#add-device-name');
 const removeDeviceNameElement = document.querySelector('#remove-device-name');
