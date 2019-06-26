@@ -98,21 +98,11 @@ export function requireHTTPS(request: Request, response: Response, next: NextFun
 }
 
 export function notFound(request: Request, response: Response) {
-    response.status(404);
-
-    if (request.accepts('html')) {
-        return response.render('404', { url: request.url });
-    }
-
-    if (request.accepts('json')) {
-        return response.json({
-            success: false,
-            code: 404,
-            message: 'The page you are looking for is not found'
-        });
-    }
-
-    return response.type('txt').send('The page you are looking for is not found.');
+    response.status(404).json({
+        success: false,
+        code: 404,
+        message: 'The page you are looking for is not found'
+    });
 }
 
 export default { favicon, router, requireHTTPS, notFound };

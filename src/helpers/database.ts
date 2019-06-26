@@ -14,7 +14,7 @@
  */
 
 import dotenv from 'dotenv';
-import mysql from "promise-mysql";
+import mysql from 'promise-mysql';
 
 dotenv.config();
 

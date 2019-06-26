@@ -171,6 +171,7 @@ function showAlert(type, message, isReplace) {
 function getSelectedDevice() {
 	return devices.find(dev => dev.id === selectedDeviceId);
 }
+
 function onShowAddDevice() {
 	addDeviceNameElement.value = '';
 	addModalJQueryElement.modal('show');
@@ -197,9 +198,9 @@ function onRemoveDevice() {
 	const device = getSelectedDevice();
 	removeModalJQueryElement.modal('hide');
 	showAlert(AlertType.Info, 'Removing device "' + device.name + '"...', true);
-	socket.emit(WebSocketEvent.onRemoveDevice, { 
+	socket.emit(WebSocketEvent.onRemoveDevice, {
 		id: device.id,
-		name: device.name	
+		name: device.name
 	}, onResponseEvent);
 }
 
@@ -216,30 +217,26 @@ const WebSocketEvent = {
 	onError: 'onError'
 };
 
-const serverURI = window.location.protocol 
-	+ '//' 
-	+ window.location.hostname
-	+ ':' 
-	+ window.location.port 
-	+ '/';
+let socket;
 
-const socket = io(serverURI, { autoConnect: true });
+function createPayload(event, data) {
+	return JSON.stringify({ event, data });
+}
 
 function onConnection(message) {
 	console.log(message);
 	showAlert(AlertType.Success, message, true);
-	socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
+	addDeviceButtonElement.disabled = false;
+	socket.send(createPayload(WebSocketEvent.onRequestDevices));
 }
 
-function onAfterAddRemoveDevice(data) {
-	const { success, message } = data;
-	console.log(message);
+function onAfterAddRemoveDevice(success, message) {
 	showAlert(success ? AlertType.Success : AlertType.Danger, message, true);
 	if (success) {
 		setDataTableText('Please select a device first.');
 		removeDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.innerHTML = 'Remove Device';
-		socket.emit(WebSocketEvent.onRequestDevices, onResponseEvent);
+		socket.send(createPayload(WebSocketEvent.onRequestDevices));
 	}
 }
 
@@ -270,18 +267,12 @@ function onEmitHeartRate(pulse) {
 }
 
 function onRetrieveDevices(_devices) {
-	if (!Array.isArray(_devices)) {
-		console.log(
-			'Data on Web Socket "onRetrieveDevices" event is not an array. Parsing failed!'
-		);
-		return;
-	}
 	devices = _devices;
 	let deviceSelectHTML = '';
 	for (const device of _devices) {
 		device.id = parseInt(device.id);
 		deviceSelectHTML =
-			deviceSelectHTML + addNewOption(device.id, device.name);
+			deviceSelectHTML + addNewOption(device.id, device.name + ' [ID: ' + device.id + ']');
 	}
 	const firstOption = devices.length > 0
 		? 'Select a device...'
@@ -293,17 +284,11 @@ function onRetrieveDevices(_devices) {
 }
 
 function onRetrieveHeartRates(pulses) {
-	if (!Array.isArray(pulses)) {
-		console.log(
-			'Data on Web Socket "onRetrieveHeartRates" event is not an array. Parsing failed!'
-		);
-		return;
-	}
 	if (pulses.length === 0) {
 		setDataTableText(
-			'There are no any heart rates data for ' 
-				+ getSelectedDevice().name + ' [ID: ' 
-				+ getSelectedDevice().id + '].'
+			'There are no any heart rates data for '
+			+ getSelectedDevice().name + ' [ID: '
+			+ getSelectedDevice().id + '].'
 		);
 		tableData = [];
 		return;
@@ -318,16 +303,13 @@ function onRetrieveHeartRates(pulses) {
 	addDataTableRows(rows.reverse());
 }
 
-function onError(error) {
-	const message = (error.message || error.sqlMessage || 'Unkown error');
-	console.log('Web Socket Request ERROR: ' + message);
-	showAlert(AlertType.Danger, message, true);
-}
-
 function onResponseEvent(event, data) {
 	switch (event) {
+		case WebSocketEvent.onConnection:
+			onConnection(data);
+			break;
 		case WebSocketEvent.onAfterAddRemoveDevice:
-			onAfterAddRemoveDevice(data);
+			onAfterAddRemoveDevice(data.success, data.message);
 			break;
 		case WebSocketEvent.onRetrieveDevices:
 			onRetrieveDevices(data);
@@ -341,25 +323,50 @@ function onResponseEvent(event, data) {
 	}
 }
 
-socket.on(WebSocketEvent.onConnection, onConnection);
-socket.on(WebSocketEvent.onEmitHeartRate, onEmitHeartRate);
-socket.on(WebSocketEvent.onRetrieveDevices, onRetrieveDevices);
-socket.on('error', function() {
-	onError(new Error('An unknown error happen on Real-Time server connection.'));
-});
-socket.on('connect_failed', function() {
-	onError(new Error('Failed to connect to Real-Time server!'));
-});
-socket.on('disconnect', function() {
-	onWarning(new Error('Disconnected from Real-Time server! Retrying to connect...'));
-});
-socket.on('reconnect_attempt', () => {
-	socket.io.opts.transports = ['polling', 'websocket'];
-	const transportName = socket.io.engine.transport.name === 'websocket' 
-		? 'Web Socket'
-		: 'HTTP Long-Polling';
-	onWarning(new Error('Establishing connection to Real-Time server via ' + transportName + '...'));
-});
+function onError(error) {
+	const message = (error.message || error.sqlMessage || 'An unexpected unknown error happened.');
+	console.log('ERROR: ' + message);
+	showAlert(AlertType.Danger, message, true);
+}
+
+function startWebSocket() {
+	const serverURI =
+		(window.location.protocol === 'https:' ? 'wss:' : 'ws:')+
+		'//' +
+		window.location.hostname +
+		':' +
+		window.location.port +
+		'/';
+	socket = new WebSocket(serverURI);
+	socket.onopen = function() {
+		showAlert(
+			AlertType.Warning,
+			'Real-Time connection to server opened. Waiting for a response...', true
+		);
+		socket.send(createPayload(WebSocketEvent.onConnection));
+	}
+	socket.onclose = function() {
+		addDeviceButtonElement.disabled = true;
+		removeDeviceButtonElement.disabled = true;
+		console.log('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
+		showAlert(
+			AlertType.Warning,'Disconnected from Real-Time server! Retrying to connect...', true
+		);
+		setTimeout(function() { startWebSocket(); }, 1000);
+	}
+	socket.onmessage = messageEvent => {
+		const { event, data } = JSON.parse(messageEvent.data);
+		if (!event) {
+			return;
+		}
+		onResponseEvent(event, data);
+	}
+	socket.onerror = function(event) {
+		event.preventDefault();
+		onError(new Error('An unknown error happen on Real-Time server connection.'));
+	}
+}
+
 deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
 	heartRateElement.innerHTML = '0';
@@ -368,22 +375,13 @@ deviceSelectElement.addEventListener('change', function() {
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);
-	socket.emit(
-		WebSocketEvent.onRequestHeartRates,
-		selectedDeviceId,
-		onResponseEvent
-	);
+	socket.send(createPayload(WebSocketEvent.onRequestHeartRates, selectedDeviceId));
 });
 changeChartButtonElement.addEventListener('click', function() {
 	switchChart();
 });
 
 function main() {
-	const transportName = socket.io.engine.transport.name === 'websocket' 
-		? 'Web Socket'
-		: 'HTTP Long-Polling';
-	onWarning(new Error('Establishing connection to Real-Time server via ' + transportName + '...'));
-	setDataTableText('Please select a device first.');
 	initialiseChart();
 	setInterval(function() {
 		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
@@ -393,4 +391,9 @@ function main() {
 			pushChartData(0, 0);
 		}
 	}, 1000);
+	setDataTableText('Please select a device first.');
+	showAlert(
+		AlertType.Warning,'Establishing connection to Real-Time server via WebSocket...', true
+	);
+	startWebSocket();
 }
