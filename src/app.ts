@@ -198,9 +198,13 @@ function onConnection(socket: WebSocket) {
 async function onAddDevice(socket: WebSocket, name: string) {
 	try {
 		const database = await getDatabase();
+		const oldDevices: IDeviceModel[] = await database.query(
+			'SELECT * FROM devices'
+		);
+		const id: number = oldDevices.length === 0 ? 1 : oldDevices.length + 1
 		const { affectedRows  } = await database.query(
 			'INSERT INTO devices SET ?',
-			{ name }
+			{ id, name }
 		);
 		const success = parseInt(affectedRows) > 0;
 		const message = success
