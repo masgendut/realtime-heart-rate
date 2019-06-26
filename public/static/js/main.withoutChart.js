@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 const AlertType = {
 	Primary: 'primary',
 	Secondary: 'secondary',
@@ -30,8 +29,7 @@ const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
 	'.heart-rate-emit-time'
 );
-const changeChartButtonElement = document.querySelector('#change-chart-button');
-const heartRateChartElement = document.querySelector('#heart-rate-chart');
+const addDeviceButtonElement = document.querySelector('#add-device-button');
 const removeDeviceButtonElement = document.querySelector('#remove-device-button');
 const addDeviceNameElement = document.querySelector('#add-device-name');
 const removeDeviceNameElement = document.querySelector('#remove-device-name');
@@ -39,89 +37,14 @@ const tableJQueryElement = $('.heart-rate-table');
 const addModalJQueryElement = $('#add-modal');
 const removeModalJQueryElement = $('#remove-modal');
 
-let chart = null;
-let activeChart = 0;
-let chartData = [];
 let datatable = null;
 let lastPulseReceived = new Date();
 let devices = [];
 let tableData = [];
-let isTableDataReversed = false;
 let selectedDeviceId = null;
 
 function addNewOption(value, option) {
 	return '<option value="' + value + '">' + option + '</option>';
-}
-
-function initialiseChart() {
-	changeChartButtonElement.innerHTML = 'View Time Delay Chart';
-	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
-	chart = new Chart(heartRateChartElement, {
-		type: 'line',
-		data: {
-			labels: ['', '', '', '', '', ''],
-			datasets: [
-				{
-					label: 'heart rate',
-					data: [0, 0, 0, 0, 0, 0],
-					backgroundColor: 'rgba(255, 255, 255, 0)',
-					borderColor: 'rgba(54, 162, 235, 1)',
-					borderWidth: 1
-				}
-			]
-		},
-		options: {
-			scales: {
-				yAxes: [
-					{
-						ticks: {
-							beginAtZero: true
-						}
-					}
-				]
-			}
-		}
-	});
-	changeChartButtonElement.style.display = 'block';
-}
-
-function updateChart() {
-	chart.data.datasets[0].data = chartData[activeChart];
-	chart.update();
-}
-
-function switchChart() {
-	activeChart = activeChart === 0 ? 1 : 0;
-	changeChartButtonElement.innerHTML =
-		activeChart === 0 ? 'View Time Delay Chart' : 'View Heart Rate Chart';
-	if (activeChart === 0) {
-		changeChartButtonElement.classList.add('btn-danger');
-		changeChartButtonElement.classList.remove('btn-info');
-	} else {
-		changeChartButtonElement.classList.add('btn-info');
-		changeChartButtonElement.classList.remove('btn-danger');
-	}
-	chart.data.datasets[0].label =
-		activeChart === 0 ? 'heart rate' : 'seconds from device';
-	chart.data.datasets[0].borderColor =
-		activeChart === 0 ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 99, 132, 1)';
-	updateChart();
-}
-
-function pushChartData(heartRate, timeDelay) {
-	for (let x = 0; x < 2; x++) {
-		for (let y = 5; y > 0; y--) {
-			chartData[x][y] = chartData[x][y - 1];
-		}
-	}
-	chartData[0][0] = heartRate;
-	chartData[1][0] = timeDelay;
-	updateChart();
-}
-
-function clearChartData() {
-	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
-	updateChart();
 }
 
 function addDataTableRows(rows) {
@@ -191,17 +114,17 @@ function onAddDevice() {
 		return;
 	}
 	showAlert(AlertType.Info, 'Adding device "' + name + '"...', true);
-	socket.emit(WebSocketEvent.onAddDevice, name, onResponseEvent);
+	socket.send(createPayload(WebSocketEvent.onAddDevice, name));
 }
 
 function onRemoveDevice() {
 	const device = getSelectedDevice();
 	removeModalJQueryElement.modal('hide');
 	showAlert(AlertType.Info, 'Removing device "' + device.name + '"...', true);
-	socket.emit(WebSocketEvent.onRemoveDevice, {
+	socket.send(createPayload(WebSocketEvent.onRemoveDevice, {
 		id: device.id,
 		name: device.name
-	}, onResponseEvent);
+	}));
 }
 
 const WebSocketEvent = {
@@ -253,7 +176,6 @@ function onEmitHeartRate(pulse) {
 		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML =
 			transportDelay.toString() + ' seconds from device';
-		pushChartData(pulse.pulse, transportDelay);
 		const row = [
 			pulse.pulse,
 			moment(pulse.emitted_at).format('lll'),
@@ -287,8 +209,8 @@ function onRetrieveHeartRates(pulses) {
 	if (pulses.length === 0) {
 		setDataTableText(
 			'There are no any heart rates data for '
-			+ getSelectedDevice().name + ' [ID: '
-			+ getSelectedDevice().id + '].'
+				+ getSelectedDevice().name + ' [ID: '
+				+ getSelectedDevice().id + '].'
 		);
 		tableData = [];
 		return;
@@ -372,26 +294,22 @@ function startWebSocket() {
 
 deviceSelectElement.addEventListener('change', function() {
 	selectedDeviceId = parseInt(deviceSelectElement.value);
+	removeDeviceButtonElement.innerHTML = 'Remove ' + getSelectedDevice().name;
+	removeDeviceButtonElement.disabled = false;
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
-	clearChartData();
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);
 	socket.send(createPayload(WebSocketEvent.onRequestHeartRates, selectedDeviceId));
 });
-changeChartButtonElement.addEventListener('click', function() {
-	switchChart();
-});
 
 function main() {
-	initialiseChart();
 	setInterval(function() {
 		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
 		if (timeDiff > 3000) {
 			heartRateElement.innerHTML = '0';
 			heartRateEmitTimeElement.innerHTML = '';
-			pushChartData(0, 0);
 		}
 	}, 1000);
 	setDataTableText('Please select a device first.');
