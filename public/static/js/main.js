@@ -233,6 +233,9 @@ function onResponseEvent(event, data) {
 		case WebSocketEvent.onAfterAddRemoveDevice:
 			onAfterAddRemoveDevice(data.success, data.message);
 			break;
+		case WebSocketEvent.onEmitHeartRate:
+			onEmitHeartRate(data);
+			break;
 		case WebSocketEvent.onRetrieveDevices:
 			onRetrieveDevices(data);
 			break;
