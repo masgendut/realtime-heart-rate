@@ -201,7 +201,8 @@ async function onAddDevice(socket: WebSocket, name: string) {
 		const oldDevices: IDeviceModel[] = await database.query(
 			'SELECT * FROM devices'
 		);
-		const id: number = oldDevices.length === 0 ? 1 : oldDevices.length + 1
+		// @ts-ignore
+		const id: number = oldDevices.length === 0 ? 1 : oldDevices[oldDevices.length-1].id + 1
 		const { affectedRows  } = await database.query(
 			'INSERT INTO devices SET ?',
 			{ id, name }
