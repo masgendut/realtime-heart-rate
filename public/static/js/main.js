@@ -376,6 +376,7 @@ deviceSelectElement.addEventListener('change', function() {
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
 	clearChartData();
+	removeDeviceButtonElement.disabled = false;
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);

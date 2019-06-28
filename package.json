@@ -28,12 +28,16 @@
 		"@types/ws": "^6.0.1",
 		"nodemon": "^1.19.1",
 		"ts-node": "^8.3.0",
-		"typescript": "^3.5.2"
+		"typescript": "^3.5.2",
+		"uglify-es": "^3.3.9"
 	},
 	"scripts": {
-		"start": "ts-node src/app.ts",
+		"minify": "npm run minify:main && npm run minify:preventFormEnter",
+		"minify:main": "uglifyjs public/static/js/main.js -c -m -o public/static/js/main.min.js",
+		"minify:preventFormEnter": "uglifyjs public/static/js/preventFormEnter.js -c -m -o public/static/js/preventFormEnter.min.js",
+		"start": "npm run minify && ts-node src/app.ts",
 		"dev": "nodemon",
-		"build": "tsc"
+		"build": "tsc && npm run minify"
 	},
 	"optionalDependencies": {
 		"bufferutil": "^4.0.1",
