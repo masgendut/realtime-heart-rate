@@ -8,7 +8,6 @@
 	"license": "Apache-2.0",
 	"private": true,
 	"dependencies": {
-		"@mysql/xdevapi": "^8.0.16",
 		"body-parser": "^1.19.0",
 		"dotenv": "^8.0.0",
 		"express": "^4.17.1",
@@ -25,6 +24,7 @@
 		"@types/express-serve-static-core": "^4.16.7",
 		"@types/node": "^12.0.8",
 		"@types/swagger-ui-express": "^3.0.1",
+		"@types/uglify-es": "^3.0.0",
 		"@types/ws": "^6.0.1",
 		"nodemon": "^1.19.1",
 		"ts-node": "^8.3.0",
@@ -32,15 +32,7 @@
 		"uglify-es": "^3.3.9"
 	},
 	"scripts": {
-		"minify": "npm run minify:elements && npm run minify:alertManipulation && npm run minify:chartManipulation && npm run minify:tableManipulation && npm run minify:offlineStorage && npm run minify:webSocket && npm run minify:eventListener && npm run minify:main",
-		"minify:elements": "uglifyjs public/static/js/elements.js -c -m -o public/static/js/elements.min.js",
-		"minify:alertManipulation": "uglifyjs public/static/js/alertManipulation.js -c -m -o public/static/js/alertManipulation.min.js",
-		"minify:chartManipulation": "uglifyjs public/static/js/chartManipulation.js -c -m -o public/static/js/chartManipulation.min.js",
-		"minify:tableManipulation": "uglifyjs public/static/js/tableManipulation.js -c -m -o public/static/js/tableManipulation.min.js",
-		"minify:offlineStorage": "uglifyjs public/static/js/offlineStorage.js -c -m -o public/static/js/offlineStorage.min.js",
-		"minify:webSocket": "uglifyjs public/static/js/webSocket.js -c -m -o public/static/js/webSocket.min.js",
-		"minify:eventListener": "uglifyjs public/static/js/eventListener.js -c -m -o public/static/js/eventListener.min.js",
-		"minify:main": "uglifyjs public/static/js/main.js -c -m -o public/static/js/main.min.js",
+		"minify": "ts-node scripts/minify.ts",
 		"start": "npm run minify && ts-node src/app.ts",
 		"dev": "nodemon",
 		"build": "tsc && npm run minify"

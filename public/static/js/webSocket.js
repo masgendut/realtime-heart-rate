@@ -38,7 +38,7 @@ function getSelectedDevice() {
 
 function onConnection(message) {
 	console.log(message);
-	showAlert(AlertType.Success, message, true);
+	createToast(ToastType.Success, message);
 	addDeviceButtonElement.disabled = false;
 	socket.send(WebSocketEvent.onRequestDevices);
 }
@@ -47,17 +47,17 @@ function onAddDevice() {
 	const name = addDeviceNameElement.value;
 	addModalJQueryElement.modal('hide');
 	if (!name || name === '') {
-		showAlert(AlertType.Danger, 'Failed to add device. Device name cannot be empty.');
+		createToast(ToastType.Danger, 'Failed to add device. Device name cannot be empty.');
 		return;
 	}
-	showAlert(AlertType.Info, 'Adding device "' + name + '"...', true);
+	createToast(ToastType.Information, 'Adding device "' + name + '"...');
 	socket.send(WebSocketEvent.onAddDevice, name, onResponseEvent);
 }
 
 function onRemoveDevice() {
 	const device = getSelectedDevice();
 	removeModalJQueryElement.modal('hide');
-	showAlert(AlertType.Info, 'Removing device "' + device.name + '"...', true);
+	createToast(ToastType.Information, 'Removing device "' + device.name + '"...');
 	socket.send(WebSocketEvent.onRemoveDevice, {
 		id: device.id,
 		name: device.name
@@ -65,7 +65,7 @@ function onRemoveDevice() {
 }
 
 function onAfterAddRemoveDevice(success, message) {
-	showAlert(success ? AlertType.Success : AlertType.Danger, message, true);
+	createToast(success ? ToastType.Success : ToastType.Danger, message);
 	if (success) {
 		setDataTableText('Please select a device first.');
 		removeDeviceButtonElement.disabled = true;
@@ -88,7 +88,7 @@ async function onEmitHeartRate(pulse) {
 		heartRateElement.innerHTML = localPulse.pulse;
 		heartRateEmitTimeElement.innerHTML = transportDelayString;
 		if (USE_CHART === true) {
-			pushChartData(pulse.pulse, transportDelay);
+			pushChartData(localPulse.pulse, transportDelay);
 		}
 		const row = [
 			localPulse.pulse,
@@ -166,7 +166,8 @@ function onResponseEvent(event, data) {
 function onError(error) {
 	const message = (error.message || error.sqlMessage || 'An unexpected unknown error happened.');
 	console.log('ERROR: ' + message);
-	showAlert(AlertType.Danger, message, true);
+	showAlert(AlertType.Danger, 'ERROR: ' + message, true);
+	createToast(ToastType.Danger, message);
 }
 
 function startWebSocket() {
@@ -183,9 +184,9 @@ function startWebSocket() {
 		_internalSend.call(socket, JSON.stringify({ event, data }));
 	}
 	socket.onopen = function() {
-		showAlert(
-			AlertType.Warning,
-			'Real-Time connection to server opened. Waiting for a response...', true
+		createToast(
+			ToastType.Warning,
+			'Real-Time connection to server opened. Waiting for a response...'
 		);
 		socket.send(WebSocketEvent.onConnection);
 	}
@@ -193,8 +194,8 @@ function startWebSocket() {
 		addDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.disabled = true;
 		console.log('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
-		showAlert(
-			AlertType.Warning,'Disconnected from Real-Time server! Retrying to connect...', true
+		createToast(
+			ToastType.Warning,'Disconnected from Real-Time server! Retrying to connect...'
 		);
 		setTimeout(function() { startWebSocket(); }, 1000);
 	}

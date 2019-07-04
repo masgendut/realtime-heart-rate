@@ -14,6 +14,7 @@
  */
 
 const informationElement = document.querySelector('.information');
+const toastsElement = document.querySelector('#toasts');
 const deviceSelectElement = document.querySelector('.device-select');
 const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(

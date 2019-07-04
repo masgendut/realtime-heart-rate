@@ -20,7 +20,7 @@ let activeChart = 0;
 let chartData = [];
 
 function initialiseChart() {
-	changeChartButtonElement.innerHTML = 'View Time Delay Chart';
+	changeChartButtonElement.innerHTML = 'View Transport Delay Chart';
 	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
 	chart = new Chart(heartRateChartElement, {
 		type: 'line',
@@ -59,7 +59,7 @@ function updateChart() {
 function switchChart() {
 	activeChart = activeChart === 0 ? 1 : 0;
 	changeChartButtonElement.innerHTML =
-		activeChart === 0 ? 'View Time Delay Chart' : 'View Heart Rate Chart';
+		activeChart === 0 ? 'View Transport Delay Chart' : 'View Heart Rate Chart';
 	if (activeChart === 0) {
 		changeChartButtonElement.classList.add('btn-danger');
 		changeChartButtonElement.classList.remove('btn-info');

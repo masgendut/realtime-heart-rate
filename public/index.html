@@ -23,6 +23,7 @@ limitations under the License.
     <meta name="author" content="Danang Galuh Tegar Prasetyo">
     <link rel="stylesheet" href="static/css/bootstrap.min.css" />
     <link rel="stylesheet" href="static/css/datatables.min.css" />
+    <link rel="stylesheet" href="static/css/toastr.min.css" />
 
     <title>Real-Time Heart Rate</title>
 
@@ -82,6 +83,11 @@ limitations under the License.
                     </tr>
                     </thead>
                 </table>
+                <br />
+                <div class="alert alert-info" role="alert" role="alert">
+                    Transport Delay defines the time it takes to realtime-ly send a heart rate information from a sensor device to this device.
+                    N/A (stands for Not Available) means the specified heart rate information has never been realtime-ly sent to this device.
+                </div>
             </div>
         </div>
 
@@ -149,7 +155,7 @@ limitations under the License.
         </div>
     </div>
 
-    <script src="static/js/3rd-party/jquery.slim.min.js"></script>
+    <script src="static/js/3rd-party/jquery.min.js"></script>
     <script src="static/js/3rd-party/popper.umd.min.js"></script>
     <script src="static/js/3rd-party/bootstrap.min.js"></script>
     <script src="static/js/3rd-party/datatables.min.js"></script>
@@ -157,30 +163,8 @@ limitations under the License.
     <script src="static/js/3rd-party/Chart.min.js"></script>
     <script src="static/js/3rd-party/moment.min.js"></script>
     <script src="static/js/3rd-party/localforage.min.js"></script>
-    <script src="static/js/elements.min.js"></script>
-    <script src="static/js/alertManipulation.min.js"></script>
-    <script src="static/js/chartManipulation.min.js"></script>
-    <script src="static/js/tableManipulation.min.js"></script>>
-    <script src="static/js/offlineStorage.min.js"></script>
-    <script src="static/js/webSocket.min.js"></script>
-    <script src="static/js/eventListener.min.js"></script>
-    <script src="static/js/main.min.js"></script>
-    <script lang="js">
-        (function() {
-			try {
-				eval('async () => {}');
-				main();
-			} catch (error) {
-				if (error instanceof SyntaxError) {
-					showAlert(AlertType.Danger,
-                        'Your browser does not support this application. Please update to more modern browser.',
-                        true);
-				} else {
-					showAlert(AlertType.Danger, error.message, true);
-                }
-			}
-        })();
-    </script>
+    <script src="static/js/3rd-party/toastr.min.js"></script>
+    <script src="static/js/application.min.js"></script>
 
 </body>
 </html>

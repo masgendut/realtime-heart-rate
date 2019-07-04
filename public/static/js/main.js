@@ -28,8 +28,22 @@ function main() {
 	if (USE_CHART === true) {
 		initialiseChart();
 	}
-	showAlert(
-		AlertType.Warning,'Establishing connection to Real-Time server via WebSocket...', true
-	);
+	createToast(ToastType.Warning, 'Establishing connection to Real-Time server via WebSocket...');
 	startWebSocket();
 }
+
+(function() {
+	try {
+		eval('async () => {}');
+		main();
+	} catch (error) {
+		if (error instanceof SyntaxError) {
+			showAlert(AlertType.Danger,
+				'Your browser does not support this website. Please update to more modern browser for this website to run.',
+				true);
+		} else {
+			showAlert(AlertType.Danger, error.message, true);
+			console.error(error);
+		}
+	}
+})();

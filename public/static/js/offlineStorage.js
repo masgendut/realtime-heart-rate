@@ -36,6 +36,18 @@ async function getLocal(key) {
 	}
 }
 
+async function deleteLocal(key) {
+	try {
+		if (storage !== null) {
+			await storage.removeItem(key);
+			return true;
+		}
+		return false;
+	} catch (error) {
+		return false;
+	}
+}
+
 /**
  * Helper Functions for Offline Storage
  */
@@ -46,6 +58,7 @@ async function putLocalPulse(pulse, arrivedAt, transportDelay) {
 		pulse, arrivedAt, transportDelay
 	};
 	await putLocal(key, value);
+	return pulse;
 }
 
 async function getTransportDelayFromLocalPulse(pulse) {
@@ -62,6 +75,7 @@ async function getTransportDelayFromLocalPulse(pulse) {
 	) {
 		return value.transportDelay;
 	} else {
+		await deleteLocal(key);
 		return 'N/A';
 	}
 }
