@@ -13,23 +13,29 @@
  * limitations under the License.
  */
 
-function main() {
-	setInterval(function() {
-		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
-		if (timeDiff > 3000) {
-			heartRateElement.innerHTML = '0';
-			heartRateEmitTimeElement.innerHTML = '';
-			if (USE_CHART === true) {
-				pushChartData(0, 0);
-			}
-		}
-	}, 1000);
-	setDataTableText('Please select a device first.');
-	if (USE_CHART === true) {
-		initialiseChart();
+let datatable = null;
+
+function addDataTableRows(rows) {
+	if (!Array.isArray(rows)) {
+		console.log(
+			'Rows on Data Table "addDataTableRows" is not an array. Parsing failed!'
+		);
+		return;
 	}
-	showAlert(
-		AlertType.Warning,'Establishing connection to Real-Time server via WebSocket...', true
-	);
-	startWebSocket();
+	datatable.clear();
+	datatable.rows.add(rows);
+	datatable.draw();
+}
+
+function setDataTableText(text) {
+	if (datatable) {
+		datatable.destroy();
+	}
+	datatable = tableJQueryElement.DataTable({
+		data: [],
+		language: {
+			emptyTable: text
+		},
+		ordering: false
+	});
 }

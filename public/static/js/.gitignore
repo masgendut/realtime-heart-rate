@@ -1,2 +1,8 @@
+elements.min.js
+alertManipulation.min.js
+chartManipulation.min.js
+tableManipulation.min.js
+offlineStorage.min.js
+webSocket.min.js
+eventListener.min.js
 main.min.js
-preventFormEnter.min.js
