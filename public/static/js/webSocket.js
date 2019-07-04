@@ -51,14 +51,14 @@ function onAddDevice() {
 		return;
 	}
 	showAlert(AlertType.Info, 'Adding device "' + name + '"...', true);
-	socket.emit(WebSocketEvent.onAddDevice, name, onResponseEvent);
+	socket.send(WebSocketEvent.onAddDevice, name, onResponseEvent);
 }
 
 function onRemoveDevice() {
 	const device = getSelectedDevice();
 	removeModalJQueryElement.modal('hide');
 	showAlert(AlertType.Info, 'Removing device "' + device.name + '"...', true);
-	socket.emit(WebSocketEvent.onRemoveDevice, {
+	socket.send(WebSocketEvent.onRemoveDevice, {
 		id: device.id,
 		name: device.name
 	}, onResponseEvent);
