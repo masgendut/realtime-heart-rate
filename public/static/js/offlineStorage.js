@@ -70,8 +70,8 @@ async function getTransportDelayFromLocalPulse(pulse) {
 	if (pulse.id === value.pulse.id &&
 		pulse.device_id === value.pulse.device_id &&
 		pulse.pulse === value.pulse.pulse &&
-		pulse.emitted_at === value.pulse.emitted_at &&
-		pulse.created_at === value.pulse.created_at
+		pulse.emitted_at.getTime() === value.pulse.emitted_at.getTime() &&
+		pulse.created_at.getTime() === value.pulse.created_at.getTime()
 	) {
 		return value.transportDelay;
 	} else {

@@ -83,10 +83,9 @@ async function onEmitHeartRate(pulse) {
 		pulse.created_at = new Date(pulse.created_at);
 		const transportDelay =
 			(lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
-		const transportDelayString = transportDelay.toString() + ' seconds from device'
-		const localPulse = await putLocalPulse(pulse, lastPulseReceived, transportDelayString);
+		const localPulse = await putLocalPulse(pulse, lastPulseReceived, transportDelay.toString() + ' s');
 		heartRateElement.innerHTML = localPulse.pulse;
-		heartRateEmitTimeElement.innerHTML = transportDelayString;
+		heartRateEmitTimeElement.innerHTML = transportDelay.toString() + ' seconds from device';
 		if (USE_CHART === true) {
 			pushChartData(localPulse.pulse, transportDelay);
 		}
@@ -131,6 +130,7 @@ async function onRetrieveHeartRates(pulses) {
 	}
 	const rows = [];
 	for (const pulse of pulses) {
+		pulse.created_at = new Date(pulse.created_at);
 		pulse.emitted_at = new Date(pulse.emitted_at);
 		const transportDelay = await getTransportDelayFromLocalPulse(pulse);
 		const row = [pulse.pulse, moment(pulse.emitted_at).format('lll'), transportDelay];
