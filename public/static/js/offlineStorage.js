@@ -28,9 +28,9 @@ async function putLocal(key, value) {
 	}
 }
 
-async function getLocal(key, callback) {
+async function getLocal(key) {
 	try {
-		return storage !== null ? await storage.getItem(key, callback) : null;
+		return storage !== null ? await storage.getItem(key) : null;
 	} catch (error) {
 		return null;
 	}
@@ -52,7 +52,7 @@ async function getTransportDelayFromLocalPulse(pulse) {
 	const key = 'pulse-' + pulse.id;
 	const value = await getLocal(key);
 	if (value === null) {
-		callback('N/A');
+		return 'N/A';
 	}
 	if (pulse.id === value.pulse.id &&
 		pulse.device_id === value.pulse.device_id &&
@@ -60,8 +60,8 @@ async function getTransportDelayFromLocalPulse(pulse) {
 		pulse.emitted_at === value.pulse.emitted_at &&
 		pulse.created_at === value.pulse.created_at
 	) {
-		callback(value.transportDelay);
+		return value.transportDelay;
 	} else {
-		callback('N/A');
+		return 'N/A';
 	}
 }
