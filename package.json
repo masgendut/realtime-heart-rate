@@ -3,8 +3,8 @@
 	"version": "1.0.0",
 	"description": "Back End for Real-Time Heart Rate monitoring.",
 	"main": "lib/app.js",
-	"repository": "git@github.com:danang-id/realtime-heart-rate.git",
-	"author": "Danang Galuh Tegar Prasetyo <danang.galuh.t@gmail.com> (https://github.com/danang-id)",
+	"repository": "git@github.com:masgendut/realtime-heart-rate.git",
+	"author": "Mokhamad Mustaqim <mokhamadmustaqim@gmail.com> (https://github.com/masgendut)",
 	"license": "Apache-2.0",
 	"private": true,
 	"dependencies": {

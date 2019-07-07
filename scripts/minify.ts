@@ -23,7 +23,7 @@ const options: UglifyJS.MinifyOptions = {
 		beautify: false,
 		shebang: false,
 		preamble: `/**
- * Copyright 2019, Danang Galuh Tegar Prasetyo & Mokhamad Mustaqim.
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at

@@ -11,7 +11,7 @@ Before using this program, make sure you have [NodeJS](https://nodejs.org/) inst
 First, all you have to do is cloning this program.
 
 ```bash
-git clone https://github.com/danang-id/realtime-heart-rate.git
+git clone https://github.com/masgendut/realtime-heart-rate.git
 cd realtime-heart-rate
 ```
 
@@ -58,14 +58,14 @@ To contribute, simply fork this project, and issue a pull request.
 
 ## Versioning
 
-This project is using [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/danang-id/realtime-heart-rate/tags).
+This project is using [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/masgendut/realtime-heart-rate/tags).
 
 ## Authors
 
 -   **Danang Galuh Tegar Prasetyo** - _Initial work_ - [danang-id](https://github.com/danang-id)
 -   **Mokhamad Mustaqim** - [masgendut](https://github.com/masgendut)
 
-See also the list of [contributors](https://github.com/danang-id/realtime-heart-rate/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/masgendutd/realtime-heart-rate/contributors) who participated in this project.
 
 ## License
 
