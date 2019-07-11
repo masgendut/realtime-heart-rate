@@ -66,12 +66,6 @@ function onRemoveDevice() {
 
 function onAfterAddRemoveDevice(success, message) {
 	createToast(success ? ToastType.Success : ToastType.Danger, message);
-	if (success) {
-		setDataTableText('Please select a device first.');
-		removeDeviceButtonElement.disabled = true;
-		removeDeviceButtonElement.innerHTML = 'Remove Device';
-		socket.send(WebSocketEvent.onRequestDevices);
-	}
 }
 
 async function onEmitHeartRate(pulse) {
@@ -79,8 +73,10 @@ async function onEmitHeartRate(pulse) {
 		selectedDeviceID !== null &&
 		parseInt(pulse.device_id) === selectedDeviceID
 	) {
-		lastPulseReceived = new Date();pulse.emitted_at = new Date(pulse.emitted_at);
+		lastPulseReceived = new Date();
+		pulse.emitted_at = new Date(pulse.emitted_at);
 		pulse.created_at = new Date(pulse.created_at);
+		const receivedAt = moment(lastPulseReceived).format('L LTS');
 		const transportDelay =
 			(lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
 		const localPulse = await putLocalPulse(pulse, lastPulseReceived, transportDelay.toString() + ' s');
@@ -91,7 +87,8 @@ async function onEmitHeartRate(pulse) {
 		}
 		const row = [
 			localPulse.pulse,
-			moment(localPulse.emitted_at).format('lll'),
+			moment(localPulse.emitted_at).format('L LTS'),
+			receivedAt,
 			transportDelay.toString() + ' s'
 		];
 		savedPulses.reverse();
@@ -102,12 +99,18 @@ async function onEmitHeartRate(pulse) {
 }
 
 function onRetrieveDevices(devices) {
+	selectedDeviceID = null;
+	setDataTableText('Please select a device first.');
+	removeDeviceButtonElement.disabled = true;
+	removeDeviceButtonElement.innerHTML = 'Remove Device';
 	savedDevices = devices;
+	const deviceIDs = [];
 	let deviceSelectHTML = '';
 	for (const device of devices) {
 		device.id = parseInt(device.id);
 		deviceSelectHTML = deviceSelectHTML + '<option value="' + device.id + '">'
 			+ device.name + ' [ID: ' + device.id + ']' + '</option>';
+		deviceIDs.push(device.id);
 	}
 	const firstOption = savedDevices.length > 0
 		? 'Select a device...'
@@ -116,6 +119,7 @@ function onRetrieveDevices(devices) {
 		'<option selected disabled>' + firstOption + '</option>' +
 		deviceSelectHTML;
 	deviceSelectElement.disabled = savedDevices.length === 0;
+	checkLocalPulseByDeviceIDs(deviceIDs);
 }
 
 async function onRetrieveHeartRates(pulses) {
@@ -132,8 +136,14 @@ async function onRetrieveHeartRates(pulses) {
 	for (const pulse of pulses) {
 		pulse.created_at = new Date(pulse.created_at);
 		pulse.emitted_at = new Date(pulse.emitted_at);
+		const receivedAt = await getReceivedTimeFromLocalPulse(pulse);
 		const transportDelay = await getTransportDelayFromLocalPulse(pulse);
-		const row = [pulse.pulse, moment(pulse.emitted_at).format('lll'), transportDelay];
+		const row = [
+			pulse.pulse,
+			moment(pulse.emitted_at).format('L LTS'),
+			receivedAt,
+			transportDelay
+		];
 		rows.push(row);
 	}
 	savedPulses = rows;

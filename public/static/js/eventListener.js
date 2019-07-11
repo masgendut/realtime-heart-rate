@@ -26,6 +26,7 @@ deviceSelectElement.addEventListener('change', function() {
 		clearChartData();
 	}
 	removeDeviceButtonElement.disabled = false;
+	removeDeviceButtonElement.innerHTML = 'Remove ' + getSelectedDevice().name;
 	setDataTableText(
 		'Getting heart rates data of ' + getSelectedDevice().name + '...'
 	);

@@ -77,16 +77,33 @@ limitations under the License.
                 <table class="table heart-rate-table display">
                     <thead class="thead-light">
                     <tr>
-                        <th scope="col">Heart Rate</th>
-                        <th scope="col">Emitted At</th>
-                        <th scope="col">Transport Delay</th>
+                        <th scope="col" width="25dip">HR</th>
+                        <th scope="col">EA</th>
+                        <th scope="col">RA</th>
+                        <th scope="col">TD</th>
                     </tr>
                     </thead>
                 </table>
                 <br />
                 <div class="alert alert-info" role="alert" role="alert">
+                    <strong>HR: Heart Rate</strong><br/>
+                    The heart rate value.
+                </div>
+                <div class="alert alert-info" role="alert" role="alert">
+                    <strong>EA: Emitted At</strong><br/>
+                    The time when the heart rate information was emitted by the sensor device.
+                </div>
+                <div class="alert alert-info" role="alert" role="alert">
+                    <strong>RA: Received At</strong><br/>
+                    The time when the heart rate information was received realtime-ly by this device.
+                </div>
+                <div class="alert alert-info" role="alert" role="alert">
+                    <strong>TD: Transport Delay</strong><br/>
                     Transport Delay defines the time it takes to realtime-ly send a heart rate information from a sensor device to this device.
-                    N/A (stands for Not Available) means the specified heart rate information has never been realtime-ly sent to this device.
+                </div>
+                <div class="alert alert-info" role="alert" role="alert">
+                    <strong>N/A: Not Available</strong><br/>
+                    Not Available mean the specified heart rate information has never been realtime-ly sent to this device.
                 </div>
             </div>
         </div>

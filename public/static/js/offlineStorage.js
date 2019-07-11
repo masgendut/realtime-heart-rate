@@ -17,6 +17,17 @@ const storage = !!localforage ? localforage.createInstance({
 	name: "realtime-heart-rate"
 }) : null;
 
+async function getLocalKeys() {
+	try {
+		if (storage !== null) {
+			await storage.keys();
+		}
+		return value;
+	} catch (error) {
+		return value;
+	}
+}
+
 async function putLocal(key, value) {
 	try {
 		if (storage !== null) {
@@ -52,20 +63,20 @@ async function deleteLocal(key) {
  * Helper Functions for Offline Storage
  */
 
-async function putLocalPulse(pulse, arrivedAt, transportDelay) {
+async function putLocalPulse(pulse, receivedAt, transportDelay) {
 	const key = 'pulse-' + pulse.id;
 	const value = {
-		pulse, arrivedAt, transportDelay
+		pulse, receivedAt, transportDelay
 	};
 	await putLocal(key, value);
 	return pulse;
 }
 
-async function getTransportDelayFromLocalPulse(pulse) {
+async function getLocalPulse(pulse) {
 	const key = 'pulse-' + pulse.id;
 	const value = await getLocal(key);
 	if (value === null) {
-		return 'N/A';
+		return null;
 	}
 	if (pulse.id === value.pulse.id &&
 		pulse.device_id === value.pulse.device_id &&
@@ -73,9 +84,33 @@ async function getTransportDelayFromLocalPulse(pulse) {
 		pulse.emitted_at.getTime() === value.pulse.emitted_at.getTime() &&
 		pulse.created_at.getTime() === value.pulse.created_at.getTime()
 	) {
-		return value.transportDelay;
+		return value;
 	} else {
 		await deleteLocal(key);
-		return 'N/A';
+		return null;
 	}
+}
+
+async function checkLocalPulseByDeviceIDs(deviceIDs) {
+	const keys = await getLocalKeys();
+	for (const key of keys) {
+		const value = await getLocal(key);
+		if (value.pulse !== void 0) {
+			const { pulse } = value;
+			const shouldBeCleaned = deviceIDs.findIndex(deviceID => deviceID === pulse.device_id) === -1;
+			if (shouldBeCleaned) {
+				await deleteLocal(key);
+			}
+		}
+	}
+}
+
+async function getReceivedTimeFromLocalPulse(pulse) {
+	const value = await getLocalPulse(pulse);
+	return value !== null ? moment(value.receivedAt).format('L LTS') : 'N/A';
+}
+
+async function getTransportDelayFromLocalPulse(pulse) {
+	const value = await getLocalPulse(pulse);
+	return value !== null ? value.transportDelay : 'N/A';
 }
