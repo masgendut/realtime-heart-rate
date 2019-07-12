@@ -20,11 +20,10 @@ const storage = !!localforage ? localforage.createInstance({
 async function getLocalKeys() {
 	try {
 		if (storage !== null) {
-			await storage.keys();
+			return storage.keys();
 		}
-		return value;
 	} catch (error) {
-		return value;
+		return [];
 	}
 }
 
@@ -95,7 +94,7 @@ async function checkLocalPulseByDeviceIDs(deviceIDs) {
 	const keys = await getLocalKeys();
 	for (const key of keys) {
 		const value = await getLocal(key);
-		if (value.pulse !== void 0) {
+		if (value !== null && value.pulse !== void 0) {
 			const { pulse } = value;
 			const shouldBeCleaned = deviceIDs.findIndex(deviceID => deviceID === pulse.device_id) === -1;
 			if (shouldBeCleaned) {
