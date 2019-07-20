@@ -35,11 +35,15 @@ deviceSelectElement.addEventListener('change', function() {
 		const intervalTime = (new Date()).getTime();
 		if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] === true) {
 			if ((intervalTime - requestTime) >= 5000) {
-				showAlert(AlertType.Warning, 'The process to retrieve heart rate data of "' + getSelectedDevice().name + '" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.', true);
+				const message = 'The process to retrieve heart rate data of "' + getSelectedDevice().name + '" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.';
+				showAlert(AlertType.Warning, message, true);
+				createToast(ToastType.Warning, message, 'Still retrieving...')
 			}
 		} else {
 			if ((intervalTime - requestTime) >= 5000) {
-				showAlert(AlertType.Success, 'Heart rate data of "' + getSelectedDevice().name + '" is successfully retrieved.', true);
+				const message = 'Heart rate data of "' + getSelectedDevice().name + '" is successfully retrieved.';
+				showAlert(AlertType.Warning, message, true);
+				createToast(ToastType.Information, message, 'Retrieve completed')
 			}
 			clearInterval(interval);
 		}
