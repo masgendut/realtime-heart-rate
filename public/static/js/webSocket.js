@@ -136,7 +136,6 @@ function onRetrieveDevices(devices) {
 }
 
 async function onRetrieveHeartRates(pulses) {
-	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 	if (pulses.length === 0) {
 		setDataTableText(
 			'There are no any heart rates data for '
@@ -177,6 +176,7 @@ async function onRetrieveHeartRates(pulses) {
 	savedRawPulses = rawRows;
 	savedPulses = rows;
 	addDataTableRows(rows.reverse());
+	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 }
 
 function onResponseEvent(event, data) {
