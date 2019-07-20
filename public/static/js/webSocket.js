@@ -34,14 +34,16 @@ let lastPulseReceived = new Date();
 let selectedDeviceID = null;
 let areWaitingResponses = { };
 let socketStates = {};
+let welcomeMessage = '';
 
 function getSelectedDevice() {
 	return savedDevices.find(dev => dev.id === selectedDeviceID);
 }
 
 function onConnection(message) {
-	console.log(message);
-	createToast(ToastType.Success, message);
+	welcomeMessage = message;
+	console.log(welcomeMessage);
+	createToast(ToastType.Success, welcomeMessage);
 	addDeviceButtonElement.disabled = false;
 	socket.send(WebSocketEvent.onRequestDevices);
 }
@@ -225,14 +227,21 @@ function startWebSocket() {
 		_internalSend.call(socket, JSON.stringify({ event, data }));
 	}
 	socket.onopen = function() {
-		if (socketStates['reconnect'] !== true) {
+		console.log(socketStates.reconnect);
+		if (socketStates.reconnect !== true) {
 			createToast(
 				ToastType.Warning,
 				'Real-Time connection to server opened. Waiting for a response...'
 			);
 			socket.send(WebSocketEvent.onConnection);
+		} else {
+			console.log(welcomeMessage);
+			createToast(
+				ToastType.Success,
+				welcomeMessage
+			);
 		}
-		socketStates['reconnect'] = false;
+		socketStates.reconnect = false;
 	}
 	socket.onclose = function() {
 		addDeviceButtonElement.disabled = true;
@@ -241,7 +250,7 @@ function startWebSocket() {
 		createToast(
 			ToastType.Warning,'Disconnected from Real-Time server! Retrying to connect...'
 		);
-		socketStates['reconnect'] = true;
+		socketStates.reconnect = true;
 		setTimeout(function() { startWebSocket(); }, 1000);
 	}
 	socket.onmessage = messageEvent => {
