@@ -227,7 +227,6 @@ function startWebSocket() {
 		_internalSend.call(socket, JSON.stringify({ event, data }));
 	}
 	socket.onopen = function() {
-		console.log(socketStates.reconnect);
 		if (socketStates.reconnect !== true) {
 			createToast(
 				ToastType.Warning,
