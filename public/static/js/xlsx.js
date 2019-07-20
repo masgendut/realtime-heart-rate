@@ -80,12 +80,20 @@ function processWorkbook(format) {
 }
 
 function downloadWorkbook(format) {
+	function onDownloadWarning(message) {
+		showAlert(AlertType.Warning, message);
+		createToast(ToastType.Warning, message, 'Download Failed');
+	}
 	function onDownloadError(message) {
 		showAlert(AlertType.Danger, message);
-		createToast(ToastType.Error, message, 'Download Error');
+		createToast(ToastType.Error, message, 'Download Failed');
 	}
 	if (selectedDeviceID === null) {
-		onDownloadError('Please select a device first before download data.');
+		onDownloadWarning('Please select a device first before download data.');
+		return;
+	}
+	if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates]) {
+		onDownloadWarning('Please wait until heart rate data of selected device is completely retrieved.');
 		return;
 	}
 	if (format === void 0) {
