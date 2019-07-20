@@ -1,5 +1,5 @@
 <!--
-Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,6 +84,24 @@ limitations under the License.
                     </tr>
                     </thead>
                 </table>
+                <br />
+                <div class="float-right"    >
+                    <div class="btn-group dropleft">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="download-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Download Data
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="download-dropdown">
+                            <button class="dropdown-item" type="button" id="xlsx-download-button">Excel Workbook (*.xlsx)</button>
+                            <button class="dropdown-item" type="button" id="xlsb-download-button">Excel Workbook Binary (*.xlsb)</button>
+                            <button class="dropdown-item" type="button" id="xls-download-button">Excel 97-2003 Workbook (*.xls)</button>
+                            <button class="dropdown-item" type="button" id="csv-download-button">Comma Separated Value (*.csv)</button>
+                            <button class="dropdown-item" type="button" id="ods-download-button">OpenDocument Spreadsheet (*.ods)</button>
+                            <button class="dropdown-item" type="button" id="fods-download-button">Flat OpenDocument Spreadsheet (*.fods)</button>
+                            <button class="dropdown-item" type="button" id="html-download-button">Hyper Text Markup Language (*.html)</button>
+                        </div>
+                    </div>
+                </div>
+                <br />
                 <br />
                 <div class="alert alert-info" role="alert" role="alert">
                     <strong>HR: Heart Rate</strong><br/>
@@ -172,16 +190,18 @@ limitations under the License.
         </div>
     </div>
 
-    <script src="static/js/3rd-party/jquery.min.js"></script>
-    <script src="static/js/3rd-party/popper.umd.min.js"></script>
-    <script src="static/js/3rd-party/bootstrap.min.js"></script>
-    <script src="static/js/3rd-party/datatables.min.js"></script>
-    <script src="static/js/3rd-party/datatables.bootstrap.min.js" ></script>
-    <script src="static/js/3rd-party/Chart.min.js"></script>
-    <script src="static/js/3rd-party/moment.min.js"></script>
-    <script src="static/js/3rd-party/localforage.min.js"></script>
-    <script src="static/js/3rd-party/toastr.min.js"></script>
-    <script src="static/js/application.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/jquery.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/popper.umd.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/datatables.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/datatables.bootstrap.min.js" ></script>
+    <script type="text/javascript" src="static/js/3rd-party/Chart.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/moment.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/localforage.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/toastr.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/FileSaver.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="static/js/application.min.js"></script>
 
 </body>
 </html>

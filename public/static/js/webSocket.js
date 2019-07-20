@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,10 +27,12 @@ const WebSocketEvent = {
 };
 
 let socket;
+let savedRawPulses = [];
 let savedPulses = [];
 let savedDevices = [];
 let lastPulseReceived = new Date();
 let selectedDeviceID = null;
+let areWaitingResponses = { };
 
 function getSelectedDevice() {
 	return savedDevices.find(dev => dev.id === selectedDeviceID);
@@ -47,7 +49,7 @@ function onAddDevice() {
 	const name = addDeviceNameElement.value;
 	addModalJQueryElement.modal('hide');
 	if (!name || name === '') {
-		createToast(ToastType.Danger, 'Failed to add device. Device name cannot be empty.');
+		createToast(ToastType.Error, 'Failed to add device. Device name cannot be empty.');
 		return;
 	}
 	createToast(ToastType.Information, 'Adding device "' + name + '"...');
@@ -65,7 +67,7 @@ function onRemoveDevice() {
 }
 
 function onAfterAddRemoveDevice(success, message) {
-	createToast(success ? ToastType.Success : ToastType.Danger, message);
+	createToast(success ? ToastType.Success : ToastType.Error, message);
 }
 
 async function onEmitHeartRate(pulse) {
@@ -76,21 +78,32 @@ async function onEmitHeartRate(pulse) {
 		lastPulseReceived = new Date();
 		pulse.emitted_at = new Date(pulse.emitted_at);
 		pulse.created_at = new Date(pulse.created_at);
-		const receivedAt = moment(lastPulseReceived).format('L LTS');
 		const transportDelay =
 			(lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
-		const localPulse = await putLocalPulse(pulse, lastPulseReceived, transportDelay.toString() + ' s');
+		const localPulse = await putLocalPulse(
+			pulse,
+			lastPulseReceived,
+			transportDelay
+		);
 		heartRateElement.innerHTML = localPulse.pulse;
-		heartRateEmitTimeElement.innerHTML = transportDelay.toString() + ' seconds from device';
+		heartRateEmitTimeElement.innerHTML = transportDelay.toLocaleString('id-ID').concat(' seconds from device');
 		if (USE_CHART === true) {
 			pushChartData(localPulse.pulse, transportDelay);
 		}
-		const row = [
+		const rawRow = [
 			localPulse.pulse,
-			moment(localPulse.emitted_at).format('L LTS'),
-			receivedAt,
-			transportDelay.toString() + ' s'
+			localPulse.emitted_at,
+			lastPulseReceived,
+			transportDelay
 		];
+		const row = [
+			rawRow[0],
+			moment(rawRow[1]).format('L LTS'),
+			moment(rawRow[2]).format('L LTS'),
+			rawRow[3].toLocaleString('id-ID').concat(' s')
+		];
+		savedRawPulses.reverse();
+		savedRawPulses.push(rawRow);
 		savedPulses.reverse();
 		savedPulses.push(row);
 		const rows = savedPulses;
@@ -123,6 +136,7 @@ function onRetrieveDevices(devices) {
 }
 
 async function onRetrieveHeartRates(pulses) {
+	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 	if (pulses.length === 0) {
 		setDataTableText(
 			'There are no any heart rates data for '
@@ -132,20 +146,35 @@ async function onRetrieveHeartRates(pulses) {
 		savedPulses = [];
 		return;
 	}
+	const rawRows = [];
 	const rows = [];
 	for (const pulse of pulses) {
 		pulse.created_at = new Date(pulse.created_at);
 		pulse.emitted_at = new Date(pulse.emitted_at);
 		const receivedAt = await getReceivedTimeFromLocalPulse(pulse);
 		const transportDelay = await getTransportDelayFromLocalPulse(pulse);
-		const row = [
+		const rawRow = [
 			pulse.pulse,
-			moment(pulse.emitted_at).format('L LTS'),
+			pulse.emitted_at,
 			receivedAt,
 			transportDelay
 		];
+		const row = [
+			rawRow[0],
+			moment(rawRow[1]).format('L LTS'),
+			rawRow[2] === null
+				? 'N/A'
+				: moment(rawRow[2]).format('L LTS'),
+			rawRow[3] === null
+				? 'N/A'
+				: parseFloat(rawRow[3])
+					.toLocaleString('id-ID')
+					.concat(' s')
+		];
+		rawRows.push(rawRow);
 		rows.push(row);
 	}
+	savedRawPulses = rawRows;
 	savedPulses = rows;
 	addDataTableRows(rows.reverse());
 }
@@ -177,7 +206,7 @@ function onError(error) {
 	const message = (error.message || error.sqlMessage || 'An unexpected unknown error happened.');
 	console.log('ERROR: ' + message);
 	showAlert(AlertType.Danger, 'ERROR: ' + message, true);
-	createToast(ToastType.Danger, message);
+	createToast(ToastType.Error, message);
 }
 
 function startWebSocket() {

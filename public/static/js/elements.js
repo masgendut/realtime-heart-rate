@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,7 +14,6 @@
  */
 
 const informationElement = document.querySelector('.information');
-const toastsElement = document.querySelector('#toasts');
 const deviceSelectElement = document.querySelector('.device-select');
 const heartRateElement = document.querySelector('.heart-rate');
 const heartRateEmitTimeElement = document.querySelector(
@@ -24,6 +23,13 @@ const changeChartButtonElement = document.querySelector('#change-chart-button');
 const heartRateChartElement = document.querySelector('#heart-rate-chart');
 const addDeviceButtonElement = document.querySelector('#add-device-button');
 const removeDeviceButtonElement = document.querySelector('#remove-device-button');
+const xlsxDownloadButtonElement = document.querySelector('#xlsx-download-button');
+const xlsbDownloadButtonElement = document.querySelector('#xlsb-download-button');
+const xlsDownloadButtonElement = document.querySelector('#xls-download-button');
+const csvDownloadButtonElement = document.querySelector('#csv-download-button');
+const odsDownloadButtonElement = document.querySelector('#ods-download-button');
+const fodsDownloadButtonElement = document.querySelector('#fods-download-button');
+const htmlDownloadButtonElement = document.querySelector('#html-download-button');
 const addDeviceNameElement = document.querySelector('#add-device-name');
 const removeDeviceNameElement = document.querySelector('#remove-device-name');
 const tableJQueryElement = $('.heart-rate-table');

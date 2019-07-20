@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,7 @@ const ToastType = {
 	Information: 'info',
 	Success: 'success',
 	Warning: 'warning',
-	Danger: 'danger'
+	Error: 'error'
 };
 
 if (toastr) {

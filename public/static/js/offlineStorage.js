@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -106,10 +106,10 @@ async function checkLocalPulseByDeviceIDs(deviceIDs) {
 
 async function getReceivedTimeFromLocalPulse(pulse) {
 	const value = await getLocalPulse(pulse);
-	return value !== null ? moment(value.receivedAt).format('L LTS') : 'N/A';
+	return value !== null ? value.receivedAt : null;
 }
 
 async function getTransportDelayFromLocalPulse(pulse) {
 	const value = await getLocalPulse(pulse);
-	return value !== null ? value.transportDelay : 'N/A';
+	return value !== null ? value.transportDelay : null;
 }

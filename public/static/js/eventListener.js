@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo..
+ * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,8 +28,21 @@ deviceSelectElement.addEventListener('change', function() {
 	removeDeviceButtonElement.disabled = false;
 	removeDeviceButtonElement.innerHTML = 'Remove ' + getSelectedDevice().name;
 	setDataTableText(
-		'Getting heart rates data of ' + getSelectedDevice().name + '...'
+		'Getting heart rates data of ' + getSelectedDevice().name + '....'
 	);
+	const requestTime = (new Date()).getTime();
+	const interval = setInterval(function() {
+		if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] === true) {
+			const intervalTime = (new Date()).getTime();
+			if ((intervalTime - requestTime) >= 5000) {
+				showAlert(AlertType.Warning, 'The process to retrieve heart rate data of "' + getSelectedDevice().name + '" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.', true);
+			}
+		} else {
+			showAlert(AlertType.Success, 'Heart rate data of "' + getSelectedDevice().name + '" is successfully retrieved.', true);
+			clearInterval(interval);
+		}
+	}, 1000);
+	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = true;
 	socket.send(WebSocketEvent.onRequestHeartRates, selectedDeviceID);
 })
 addDeviceButtonElement.addEventListener('click', function(event) {
@@ -50,3 +63,31 @@ if (changeChartButtonElement) {
 		}
 	});
 }
+xlsxDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.xlsx);
+});
+xlsbDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.xlsb);
+});
+xlsDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.xls);
+});
+csvDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.csv);
+});
+odsDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.ods);
+});
+fodsDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.fods);
+});
+htmlDownloadButtonElement.addEventListener('click', function (event) {
+	event.preventDefault();
+	downloadWorkbook(WorkBookFileFormat.html);
+});
