@@ -31,19 +31,21 @@ deviceSelectElement.addEventListener('change', function() {
 		'Getting heart rates data of ' + getSelectedDevice().name + '....'
 	);
 	const requestTime = (new Date()).getTime();
+	let passedInterval = false;
 	const interval = setInterval(function() {
 		const intervalTime = (new Date()).getTime();
 		if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] === true) {
-			if ((intervalTime - requestTime) >= 5000) {
+			if ((intervalTime - requestTime) >= 5000 && !passedInterval) {
+				passedInterval = true;
 				const message = 'The process to retrieve heart rate data of "' + getSelectedDevice().name + '" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.';
 				showAlert(AlertType.Warning, message, true);
-				createToast(ToastType.Warning, message, 'Still retrieving...')
+				createToast(ToastType.Warning, message, 'Still retrieving...');
 			}
 		} else {
-			if ((intervalTime - requestTime) >= 5000) {
+			if (passedInterval) {
 				const message = 'Heart rate data of "' + getSelectedDevice().name + '" is successfully retrieved.';
-				showAlert(AlertType.Warning, message, true);
-				createToast(ToastType.Information, message, 'Retrieve completed')
+				showAlert(AlertType.Info, message, true);
+				createToast(ToastType.Information, message, 'Retrieve completed');
 			}
 			clearInterval(interval);
 		}
