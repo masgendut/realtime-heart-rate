@@ -143,6 +143,7 @@ async function onRetrieveHeartRates(pulses) {
 			+ getSelectedDevice().id + '].'
 		);
 		savedPulses = [];
+		areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 		return;
 	}
 	const rawRows = [];
