@@ -62,6 +62,7 @@ async function deleteLocal(key) {
  * Helper Functions for Offline Storage
  */
 
+/*
 async function putLocalPulse(pulse, receivedAt, transportDelay) {
 	const key = 'pulse-' + pulse._id;
 	const value = {
@@ -113,6 +114,7 @@ async function getTransportDelayFromLocalPulse(pulse) {
 	const value = await getLocalPulse(pulse);
 	return value !== null ? value.transportDelay : null;
 }
+*/
 
 async function putLocalSession(session) {
 	await putLocal('session', session);

@@ -27,8 +27,6 @@ import UAParser from 'ua-parser';
 /**
  * Import internal functions
  */
-import DatabaseConfig from './config/database.config';
-import Client from './database/Client';
 import { docs } from './docs';
 import DatabaseHelper from './helpers/database';
 import DateTime from './helpers/datetime';
@@ -38,6 +36,7 @@ import { IDeviceModel } from './models/IDeviceModel';
 import { IPulseModel } from './models/IPulseModel';
 import IClientModel from './models/IClientModel';
 import ISessionModel from './models/ISessionModel';
+import IPulseArrivalModel from './models/IPulseArrivalModel';
 
 /**
  * Import configuration from .env file to process.env variable
@@ -107,8 +106,8 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 		_id: UUID.generate(),
 		device_id: request.query.deviceId,
 		pulse: parseFloat(request.query.pulse),
-		emitted_at: DateTime.formatDate(new Date(parseInt(request.query.timestamp))),
-		created_at: DateTime.formatDate(new Date())
+		emitted_at: DateTime.formatDate(parseInt(request.query.timestamp)),
+		created_at: DateTime.formatDate()
 	};
 	pulse = UUID.transformIdentifierToShort(pulse);
 	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
@@ -136,7 +135,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 		}
 		pulse = await collections.pulses.findByID(<string>pulse._id);
 		await session.commit();
-		serverBroadcast(WebSocketEvent.onEmitHeartRate, pulse);
+		serverBroadcast(WebSocketEvent.onEmitHeartRate, UUID.transformIdentifierToRegular(pulse));
 		return response.json({
 			success: true,
 			code: 200,
@@ -189,7 +188,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 			_id: UUID.generate(),
 			client_id: request.body.clientId,
 			user_agent: UAParser.parse(request.headers['user-agent']),
-			created_at: DateTime.formatDate(new Date())
+			created_at: DateTime.formatDate()
 		};
 		frontEndSession = UUID.transformIdentifierToShort(frontEndSession);
 		const addResult = await collections.sessions
@@ -286,6 +285,46 @@ function onConnection(socket: WebSocket, sessionID: string) {
 }
 
 /**
+ * onArrivalHeartRate()
+ * This function will be fired when a client send an 'onArrivalHeartRate' event
+ * to WebSocket server.
+ *
+ * @param socket WebSocket WebSocket client where the response should sent to.
+ * @param sessionID string Session identifier of the client.
+ * @param pulseID string Pulse identifier of the arrived pulse.
+ * @param timestamp string The timestamp when the pulse arrived to the mentioned client.
+ */
+async function onArrivalHeartRate(socket: WebSocket, sessionID: string, pulseID: string, timestamp: string) {
+	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	try {
+		let pulseArrival: IPulseArrivalModel = {
+			_id: UUID.generate(),
+			session_id: sessionID,
+			pulse_id: pulseID,
+			arrived_at: DateTime.formatDate(parseInt(timestamp)),
+			created_at: DateTime.formatDate()
+		};
+		pulseArrival = UUID.transformIdentifierToShort(pulseArrival);
+		await session.startTransaction();
+		const addResult = await collections.pulse_arrivals
+			.add(pulseArrival)
+			.execute();
+		if (addResult.getWarningsCount() > 0) {
+			const warnings = addResult.getWarnings();
+			for (const warning of warnings) {
+				onError(socket, sessionID, new Error(warning.msg))
+			}
+		}
+		await session.commit();
+	} catch (error) {
+		await session.rollback();
+		onError(socket, sessionID, error);
+	} finally {
+		await client.close();
+	}
+}
+
+/**
  * onAddDevice()
  * This function will be fired when a client send an 'onAddDevice' event
  * to WebSocket server.
@@ -300,7 +339,7 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 		let device: IDeviceModel = {
 			_id: UUID.generate(),
 			name: name,
-			created_at: DateTime.formatDate(new Date())
+			created_at: DateTime.formatDate()
 		};
 		device = UUID.transformIdentifierToShort(device);
 		await session.startTransaction();
@@ -348,20 +387,20 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
  *
  * @param socket WebSocket WebSocket client where the response should sent to.
  * @param sessionID string Session identifier of the client.
- * @param deviceId string The device identifier string.
+ * @param deviceID string The device identifier string.
  * @param name string The device name.
  */
-async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceId: string, name: string) {
+async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: string, name: string) {
 	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
 	try {
-		deviceId = UUID.regularToShort(deviceId);
+		deviceID = UUID.regularToShort(deviceID);
 		await session.startTransaction();
 		const findPulseResult = await collections.pulses
-			.find({ device_id: deviceId })
+			.find({ device_id: deviceID })
 			.execute();
 		const pulses: IPulseModel[] = findPulseResult.getDocuments();
 		const deletePulseResult = await collections.pulses
-			.remove({ device_id: deviceId })
+			.remove({ device_id: deviceID })
 			.execute();
 		if (deletePulseResult.getWarningsCount() > 0) {
 			const warnings = deletePulseResult.getWarnings();
@@ -370,7 +409,7 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceId: st
 			}
 		}
 		const deleteDeviceResult = await collections.pulses
-			.removeByID(deviceId);
+			.removeByID(deviceID);
 		if (deleteDeviceResult.getWarningsCount() > 0) {
 			const warnings = deleteDeviceResult.getWarnings();
 			for (const warning of warnings) {
@@ -418,10 +457,15 @@ async function onRequestDevices(socket: WebSocket, sessionID: string) {
 	const { client, collections } = await DatabaseHelper.prepareDatabase();
 	try {
 		const findDeviceResult = await collections.devices.find().execute();
-		const devices: IDeviceModel[] = [];
+		let devices: IDeviceModel[] = [];
 		for (const device of findDeviceResult.getDocuments()) {
 			devices.push(UUID.transformIdentifierToRegular(device));
 		}
+		devices = devices.sort((a, b) => {
+			const aDate = new Date(a.created_at);
+			const bDate = new Date(b.created_at);
+			return bDate.getTime() - aDate.getTime();
+		});
 		serverSend(socket, sessionID, WebSocketEvent.onRetrieveDevices, devices);
 	} catch (error) {
 		onError(socket, sessionID, error);
@@ -437,17 +481,35 @@ async function onRequestDevices(socket: WebSocket, sessionID: string) {
  *
  * @param socket WebSocket WebSocket client where the response should sent to.
  * @param sessionID string Session identifier of the client.
- * @param deviceId string The device identifier string.
+ * @param deviceID string The device identifier string.
  */
-async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceId: string) {
+async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceID: string) {
 	const { client, collections } = await DatabaseHelper.prepareDatabase();
 	try {
-		deviceId = UUID.regularToShort(deviceId);
-		const findPulseResult = await collections.pulses.find({ device_id: deviceId }).execute();
-		const pulses: IPulseModel[] = [];
+		deviceID = UUID.regularToShort(deviceID);
+		const findPulseResult = await collections.pulses
+			.find({ device_id: deviceID })
+			.execute();
+		const findPulseArrivalResult = await collections.pulse_arrivals
+			.find()
+			.execute();
+		let pulses: IPulseModel[] = [];
+		const pulseArrivals: IPulseArrivalModel[] = findPulseArrivalResult.getDocuments();
 		for (const pulse of findPulseResult.getDocuments()) {
+			const pulseArrival = pulseArrivals.find(_pulseArrival => {
+				return _pulseArrival.pulse_id === pulse._id &&
+					_pulseArrival.session_id === UUID.regularToShort(sessionID);
+			});
+			if (pulseArrival !== void 0) {
+				(<IPulseModel>pulse).arrived_at = pulseArrival.arrived_at;
+			}
 			pulses.push(UUID.transformIdentifierToRegular(pulse));
 		}
+		pulses = pulses.sort((a, b) => {
+			const aDate = new Date(a.emitted_at);
+			const bDate = new Date(b.emitted_at);
+			return aDate.getTime() - bDate.getTime();
+		});
 		serverSend(socket, sessionID, WebSocketEvent.onRetrieveHeartRates, pulses);
 	} catch (error) {
 		onError(socket, sessionID, error);
@@ -471,11 +533,14 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
 		case WebSocketEvent.onConnection:
 			onConnection(socket, sessionID);
 			break;
+		case WebSocketEvent.onArrivalHeartRate:
+			await onArrivalHeartRate(socket, sessionID, data.pulseID, data.timestamp);
+			break;
 		case WebSocketEvent.onAddDevice:
 			await onAddDevice(socket, sessionID, data);
 			break;
 		case WebSocketEvent.onRemoveDevice:
-			await onRemoveDevice(socket, sessionID, data._id, data.name);
+			await onRemoveDevice(socket, sessionID, data.deviceID, data.name);
 			break;
 		case WebSocketEvent.onRequestDevices:
 			await onRequestDevices(socket, sessionID);
@@ -555,7 +620,7 @@ enum WebSocketEvent {
 	onRemoveDevice = 'DEVICE_REMOVE',
 	onAfterAddRemoveDevice = 'DEVICE_AFTER_ADD_REMOVE',
 	onEmitHeartRate = 'HEART_RATE_EMIT',
-	onArriveHeartRate = 'HEART_RATE_ARRIVE',
+	onArrivalHeartRate = 'HEART_RATE_ARRIVAL',
 	onRequestDevices = 'DEVICES_REQUEST',
 	onRetrieveDevices = 'DEVICES_RETRIEVE',
 	onRequestHeartRates = 'HEART_RATES_REQUEST',

@@ -22,7 +22,7 @@ async function createClients() {
 			let frontEndClient: IClientModel = {
 				_id: UUID.generate(),
 				name: clientName,
-				created_at: DateTime.formatDate(new Date())
+				created_at: DateTime.formatDate()
 			};
 			frontEndClient = UUID.transformIdentifierToShort(frontEndClient);
 			const addResult = await collections.clients

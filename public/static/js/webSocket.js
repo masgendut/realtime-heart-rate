@@ -19,7 +19,7 @@ const WebSocketEvent = {
 	onRemoveDevice: 'DEVICE_REMOVE',
 	onAfterAddRemoveDevice: 'DEVICE_AFTER_ADD_REMOVE',
 	onEmitHeartRate: 'HEART_RATE_EMIT',
-	onArriveHeartRate: 'HEART_RATE_ARRIVE',
+	onArrivalHeartRate: 'HEART_RATE_ARRIVAL',
 	onRequestDevices: 'DEVICES_REQUEST',
 	onRetrieveDevices: 'DEVICES_RETRIEVE',
 	onRequestHeartRates: 'HEART_RATES_REQUEST',
@@ -66,7 +66,7 @@ function onRemoveDevice() {
 	removeModalJQueryElement.modal('hide');
 	createToast(ToastType.Information, 'Removing device "' + device.name + '"...');
 	socket.send(WebSocketEvent.onRemoveDevice, {
-		_id: device._id,
+		deviceID: device._id,
 		name: device.name
 	}, onResponseEvent);
 }
@@ -76,35 +76,29 @@ function onAfterAddRemoveDevice(success, message) {
 }
 
 async function onEmitHeartRate(pulse) {
+	const now = (new Date()).getTime();
+	socket.send(WebSocketEvent.onArrivalHeartRate, { pulseID: pulse._id, timestamp: now });
 	if (
 		selectedDeviceID !== null &&
-		parseInt(pulse.device_id) === selectedDeviceID
+		pulse.device_id === selectedDeviceID
 	) {
-		lastPulseReceived = new Date();
-		pulse.emitted_at = new Date(pulse.emitted_at);
-		pulse.created_at = new Date(pulse.created_at);
-		const transportDelay =
-			(lastPulseReceived.getTime() - pulse.emitted_at.getTime()) / 1000;
-		const localPulse = await putLocalPulse(
-			pulse,
-			lastPulseReceived,
-			transportDelay
-		);
-		heartRateElement.innerHTML = localPulse.pulse;
+		lastPulseReceived = now;
+		const transportDelay = (lastPulseReceived - pulse.emitted_at) / 1000;
+		heartRateElement.innerHTML = pulse.pulse;
 		heartRateEmitTimeElement.innerHTML = transportDelay.toLocaleString('id-ID').concat(' seconds from device');
 		if (USE_CHART === true) {
-			pushChartData(localPulse.pulse, transportDelay);
+			pushChartData(pulse.pulse, transportDelay);
 		}
 		const rawRow = [
-			localPulse.pulse,
-			localPulse.emitted_at,
+			pulse.pulse,
+			pulse.emitted_at,
 			lastPulseReceived,
 			transportDelay
 		];
 		const row = [
 			rawRow[0],
-			moment(rawRow[1]).format('L LTS'),
-			moment(rawRow[2]).format('L LTS'),
+			formatDate(rawRow[1]),
+			formatDate(rawRow[2]),
 			rawRow[3].toLocaleString('id-ID').concat(' s')
 		];
 		savedRawPulses.reverse();
@@ -122,12 +116,10 @@ function onRetrieveDevices(devices) {
 	removeDeviceButtonElement.disabled = true;
 	removeDeviceButtonElement.innerHTML = 'Remove Device';
 	savedDevices = devices;
-	const deviceIDs = [];
 	let deviceSelectHTML = '';
 	for (const device of devices) {
 		deviceSelectHTML = deviceSelectHTML + '<option value="' + device._id + '">'
 			+ device.name + ' [ID: ' + device._id + ']' + '</option>';
-		deviceIDs.push(device._id);
 	}
 	const firstOption = savedDevices.length > 0
 		? 'Select a device...'
@@ -136,7 +128,6 @@ function onRetrieveDevices(devices) {
 		'<option selected disabled>' + firstOption + '</option>' +
 		deviceSelectHTML;
 	deviceSelectElement.disabled = savedDevices.length === 0;
-	checkLocalPulseByDeviceIDs(deviceIDs);
 }
 
 async function onRetrieveHeartRates(pulses) {
@@ -153,22 +144,22 @@ async function onRetrieveHeartRates(pulses) {
 	const rawRows = [];
 	const rows = [];
 	for (const pulse of pulses) {
-		pulse.created_at = new Date(pulse.created_at);
-		pulse.emitted_at = new Date(pulse.emitted_at);
-		const receivedAt = await getReceivedTimeFromLocalPulse(pulse);
-		const transportDelay = await getTransportDelayFromLocalPulse(pulse);
+		pulse.arrived_at = pulse.arrived_at ? pulse.arrived_at : null;
+		const transportDelay = pulse.arrived_at
+			? (pulse.arrived_at - pulse.emitted_at) / 1000
+			: null;
 		const rawRow = [
 			pulse.pulse,
 			pulse.emitted_at,
-			receivedAt,
+			pulse.arrived_at,
 			transportDelay
 		];
 		const row = [
 			rawRow[0],
-			moment(rawRow[1]).format('L LTS'),
+			formatDate(rawRow[1]),
 			rawRow[2] === null
 				? 'N/A'
-				: moment(rawRow[2]).format('L LTS'),
+				: formatDate(rawRow[2]),
 			rawRow[3] === null
 				? 'N/A'
 				: parseFloat(rawRow[3])

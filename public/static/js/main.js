@@ -20,8 +20,8 @@ function main() {
 	}
 	initialiseSession().then(() => {
 		setInterval(function() {
-			const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
-			if (timeDiff > 3000) {
+			const timeDiff = (new Date()).getTime() - lastPulseReceived;
+			if (timeDiff > 5000) {
 				heartRateElement.innerHTML = '0';
 				heartRateEmitTimeElement.innerHTML = '';
 				if (USE_CHART === true) {

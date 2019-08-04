@@ -25,7 +25,7 @@ class Database {
 
 	constructor() {
 		this.collectionNameList = [
-			'clients', 'devices', 'pulses', 'sessions'
+			'clients', 'devices', 'pulses', 'pulse_arrivals', 'sessions'
 		];
 	}
 
