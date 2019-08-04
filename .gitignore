@@ -1,7 +1,8 @@
-node_modules
+nocreateClientsde_modules
 lib
 npm-debug.log
 .DS_Store
 tmp
 .env
 .idea
+clients.json
