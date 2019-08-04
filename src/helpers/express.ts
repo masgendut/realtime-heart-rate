@@ -58,28 +58,28 @@ export const router = {
                     }
                 }
             },
-            post(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+            post(route: string, isRequireHTTPS: boolean = false) {
                 return {
                     handle(handler: RequestHandler, isAsyncHandler = true) {
                         addRoute(app, HTTP_METHOD.POST, route, isRequireHTTPS, isAsyncHandler, handler);
                     }
                 }
             },
-            put(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+            put(route: string, isRequireHTTPS: boolean = false) {
                 return {
                     handle(handler: RequestHandler, isAsyncHandler = true) {
                         addRoute(app, HTTP_METHOD.PUT, route, isRequireHTTPS, isAsyncHandler, handler);
                     }
                 }
             },
-            patch(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+            patch(route: string, isRequireHTTPS: boolean = false) {
                 return {
                     handle(handler: RequestHandler, isAsyncHandler = true) {
                         addRoute(app, HTTP_METHOD.PATCH, route, isRequireHTTPS, isAsyncHandler, handler);
                     }
                 }
             },
-            delete(route: string, isRequireHTTPS: boolean = false, handler: RequestHandler) {
+            delete(route: string, isRequireHTTPS: boolean = false) {
                 return {
                     handle(handler: RequestHandler, isAsyncHandler = true) {
                         addRoute(app, HTTP_METHOD.DELETE, route, isRequireHTTPS, isAsyncHandler, handler);

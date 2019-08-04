@@ -63,7 +63,7 @@ async function deleteLocal(key) {
  */
 
 async function putLocalPulse(pulse, receivedAt, transportDelay) {
-	const key = 'pulse-' + pulse.id;
+	const key = 'pulse-' + pulse._id;
 	const value = {
 		pulse, receivedAt, transportDelay
 	};
@@ -72,12 +72,12 @@ async function putLocalPulse(pulse, receivedAt, transportDelay) {
 }
 
 async function getLocalPulse(pulse) {
-	const key = 'pulse-' + pulse.id;
+	const key = 'pulse-' + pulse._id;
 	const value = await getLocal(key);
 	if (value === null) {
 		return null;
 	}
-	if (pulse.id === value.pulse.id &&
+	if (pulse._id === value.pulse._id &&
 		pulse.device_id === value.pulse.device_id &&
 		pulse.pulse === value.pulse.pulse &&
 		pulse.emitted_at.getTime() === value.pulse.emitted_at.getTime() &&
@@ -112,4 +112,21 @@ async function getReceivedTimeFromLocalPulse(pulse) {
 async function getTransportDelayFromLocalPulse(pulse) {
 	const value = await getLocalPulse(pulse);
 	return value !== null ? value.transportDelay : null;
+}
+
+async function putLocalSession(session) {
+	await putLocal('session', session);
+	return session;
+}
+
+async function getLocalSession() {
+	const session = await getLocal('session');
+	if (session === null) {
+		return null;
+	}
+	if (!session._id) {
+		await deleteLocal('session');
+		return null;
+	}
+	return session;
 }

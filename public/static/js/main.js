@@ -14,22 +14,28 @@
  */
 
 function main() {
-	setInterval(function() {
-		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
-		if (timeDiff > 3000) {
-			heartRateElement.innerHTML = '0';
-			heartRateEmitTimeElement.innerHTML = '';
-			if (USE_CHART === true) {
-				pushChartData(0, 0);
-			}
-		}
-	}, 1000);
-	setDataTableText('Please select a device first.');
-	if (USE_CHART === true) {
-		initialiseChart();
+	if (!CLIENT_IDENTIFIER) {
+		showAlert(AlertType.Danger, 'This application cannot be run because have no Client Identifier to connect to the server. This problem arise because of wrong application build process. Contact the developer or technical support to fix this application.', true);
+		return;
 	}
-	createToast(ToastType.Warning, 'Establishing connection to Real-Time server via WebSocket...');
-	startWebSocket();
+	initialiseSession().then(() => {
+		setInterval(function() {
+			const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
+			if (timeDiff > 3000) {
+				heartRateElement.innerHTML = '0';
+				heartRateEmitTimeElement.innerHTML = '';
+				if (USE_CHART === true) {
+					pushChartData(0, 0);
+				}
+			}
+		}, 1000);
+		setDataTableText('Please select a device first.');
+		if (USE_CHART === true) {
+			initialiseChart();
+		}
+		createToast(ToastType.Warning, 'Establishing connection to Real-Time server via WebSocket...');
+		startWebSocket();
+	});
 }
 
 (function() {

@@ -14,16 +14,18 @@
  */
 
 const WebSocketEvent = {
-	onConnection: 'onConnection',
-	onAddDevice: 'onAddDevice',
-	onRemoveDevice: 'onRemoveDevice',
-	onAfterAddRemoveDevice: 'onAfterAddRemoveDevice',
-	onEmitHeartRate: 'onEmitHeartRate',
-	onRequestDevices: 'onRequestDevices',
-	onRetrieveDevices: 'onRetrieveDevices',
-	onRequestHeartRates: 'onRequestHeartRates',
-	onRetrieveHeartRates: 'onRetrieveHeartRates',
-	onError: 'onError'
+	onConnection: 'CONNECTION',
+	onAddDevice: 'DEVICE_ADD',
+	onRemoveDevice: 'DEVICE_REMOVE',
+	onAfterAddRemoveDevice: 'DEVICE_AFTER_ADD_REMOVE',
+	onEmitHeartRate: 'HEART_RATE_EMIT',
+	onArriveHeartRate: 'HEART_RATE_ARRIVE',
+	onRequestDevices: 'DEVICES_REQUEST',
+	onRetrieveDevices: 'DEVICES_RETRIEVE',
+	onRequestHeartRates: 'HEART_RATES_REQUEST',
+	onRetrieveHeartRates: 'HEART_RATES_RETRIEVE',
+	onError: 'ERROR',
+	onInvalidSession: 'SESSION_INVALID'
 };
 
 let socket;
@@ -37,7 +39,7 @@ let socketStates = {};
 let welcomeMessage = '';
 
 function getSelectedDevice() {
-	return savedDevices.find(dev => dev.id === selectedDeviceID);
+	return savedDevices.find(dev => dev._id === selectedDeviceID);
 }
 
 function onConnection(message) {
@@ -64,7 +66,7 @@ function onRemoveDevice() {
 	removeModalJQueryElement.modal('hide');
 	createToast(ToastType.Information, 'Removing device "' + device.name + '"...');
 	socket.send(WebSocketEvent.onRemoveDevice, {
-		id: device.id,
+		_id: device._id,
 		name: device.name
 	}, onResponseEvent);
 }
@@ -123,14 +125,13 @@ function onRetrieveDevices(devices) {
 	const deviceIDs = [];
 	let deviceSelectHTML = '';
 	for (const device of devices) {
-		device.id = parseInt(device.id);
-		deviceSelectHTML = deviceSelectHTML + '<option value="' + device.id + '">'
-			+ device.name + ' [ID: ' + device.id + ']' + '</option>';
-		deviceIDs.push(device.id);
+		deviceSelectHTML = deviceSelectHTML + '<option value="' + device._id + '">'
+			+ device.name + ' [ID: ' + device._id + ']' + '</option>';
+		deviceIDs.push(device._id);
 	}
 	const firstOption = savedDevices.length > 0
 		? 'Select a device...'
-		: 'No device available.'
+		: 'No device available.';
 	deviceSelectElement.innerHTML =
 		'<option selected disabled>' + firstOption + '</option>' +
 		deviceSelectHTML;
@@ -143,7 +144,7 @@ async function onRetrieveHeartRates(pulses) {
 		setDataTableText(
 			'There are no any heart rates data for '
 			+ getSelectedDevice().name + ' [ID: '
-			+ getSelectedDevice().id + '].'
+			+ getSelectedDevice()._id + '].'
 		);
 		savedPulses = [];
 		areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
@@ -203,6 +204,9 @@ function onResponseEvent(event, data) {
 		case WebSocketEvent.onError:
 			onError(data);
 			break;
+		case WebSocketEvent.onInvalidSession:
+			onInvalidSession();
+			break;
 	}
 }
 
@@ -211,6 +215,12 @@ function onError(error) {
 	console.log('ERROR: ' + message);
 	showAlert(AlertType.Danger, 'ERROR: ' + message, true);
 	createToast(ToastType.Error, message);
+}
+
+function onInvalidSession() {
+	initialiseSession(true).then(() => {
+		socket.close();
+	});
 }
 
 function startWebSocket() {
@@ -224,24 +234,35 @@ function startWebSocket() {
 	socket = new WebSocket(serverURI)
 	const _internalSend = socket.send;
 	socket.send = (event, data) => {
-		_internalSend.call(socket, JSON.stringify({ event, data }));
-	}
+		_internalSend.call(socket, JSON.stringify({
+			sessionID: SESSION_IDENTIFIER,
+			event: event,
+			data: data
+		}));
+	};
 	socket.onopen = function() {
-		if (socketStates.reconnect !== true) {
+		function ping() {
 			createToast(
 				ToastType.Warning,
 				'Real-Time connection to server opened. Waiting for a response...'
 			);
 			socket.send(WebSocketEvent.onConnection);
+		}
+		if (socketStates.reconnect !== true) {
+			ping();
 		} else {
-			console.log(welcomeMessage);
-			createToast(
-				ToastType.Success,
-				welcomeMessage
-			);
+			if (welcomeMessage !== '') {
+				console.log(welcomeMessage);
+				createToast(
+					ToastType.Success,
+					welcomeMessage
+				);
+			} else {
+				ping();
+			}
 		}
 		socketStates.reconnect = false;
-	}
+	};
 	socket.onclose = function() {
 		addDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.disabled = true;
@@ -251,16 +272,22 @@ function startWebSocket() {
 		);
 		socketStates.reconnect = true;
 		setTimeout(function() { startWebSocket(); }, 1000);
-	}
+	};
 	socket.onmessage = messageEvent => {
-		const { event, data } = JSON.parse(messageEvent.data);
+		const { sessionID, event, data } = JSON.parse(messageEvent.data);
 		if (!event) {
 			return;
 		}
+		if (event !== WebSocketEvent.onInvalidSession) {
+			if (!sessionID || sessionID !== SESSION_IDENTIFIER) {
+				console.warn('WARNING: Live data with different session identifier received.');
+				return;
+			}
+		}
 		onResponseEvent(event, data);
-	}
+	};
 	socket.onerror = function(event) {
 		event.preventDefault();
 		onError(new Error('An unknown error happen on Real-Time server connection.'));
-	}
+	};
 }

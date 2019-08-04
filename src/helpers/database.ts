@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
+ * Copyright 2019, Danang Galuh Tegar Prasetyo & Mokhamad Mustaqim.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,28 +13,57 @@
  * limitations under the License.
  */
 
-import dotenv from 'dotenv';
-import mysql from 'promise-mysql';
+import DatabaseConfig from '../config/database.config';
+import Client from '../database/Client';
+import Session from '../database/Session';
+import Schema from '../database/Schema';
+import Collection from '../database/Collection';
 
-dotenv.config();
+class Database {
 
-const mysqlConnectionConfig: mysql.ConnectionConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USERNAME || 'root',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'heartrate',
-    timezone: 'UTC',
-    dateStrings: ['DATE', 'DATETIME']
-};
+	private readonly collectionNameList: string[];
 
-export async function getDatabase() {
-    try {
-        const connection = await mysql.createConnection(mysqlConnectionConfig);
-        await connection.query("SET time_zone='+00:00';");
-        return connection;
-    } catch (error) {
-        throw error;
-    }
+	constructor() {
+		this.collectionNameList = [
+			'clients', 'devices', 'pulses', 'sessions'
+		];
+	}
+
+    public async prepareDatabase(): Promise<DatabaseSessionPackage> {
+    	try {
+			const client = new Client(DatabaseConfig.connectionOptions, DatabaseConfig.poolingOptions);
+    		const schemaName: string = (DatabaseConfig.connectionOptions as any).schema;
+    		const session: Session = await client.getSession();
+    		let schema: Schema = session.getSchema(schemaName);
+    		if (!(await schema.existsInDatabase())) {
+    			schema = await session.createSchema(schemaName);
+			}
+    		const collections: CollectionList = {};
+    		for (const collectionName of this.collectionNameList) {
+    			let collection: Collection = await schema.getCollection(collectionName);
+    			if (!(await collection.existsInDatabase())) {
+					collection = await schema.createCollection(collectionName);
+    			}
+    			collections[collectionName] = collection;
+			}
+			return { client, session, schema, collections };
+		} catch (error) {
+    		throw error;
+		}
+	}
+
 }
 
-export default { getDatabase }
+type DatabaseSessionPackage = {
+	client: Client
+	session: Session
+	schema: Schema
+	collections: CollectionList
+}
+
+type CollectionList = {
+	[key: string]: Collection
+}
+
+const database = new Database();
+export default database;

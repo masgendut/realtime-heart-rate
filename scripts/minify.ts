@@ -4,14 +4,15 @@ import UglifyJS from 'uglify-es'
 
 const featureFilesLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js')
 const featureFiles: string[] = [
+	'clientIdentifier.js',
 	'elements.js',
 	'alertManipulation.js',
 	'toastManipulation.js',
 	'tableManipulation.js',
 	'chartManipulation.js',
 	'offlineStorage.js',
+	'sessionManager.js',
 	'webSocket.js',
-	'xlsx.js',
 	'eventListener.js',
 	'main.js'
 ]

@@ -19,7 +19,7 @@ document.querySelector('form').onkeypress = function(e) {
 	return txtArea || (e.keyCode || e.which || e.charCode || 0) !== 13;
 };
 deviceSelectElement.addEventListener('change', function() {
-	selectedDeviceID = parseInt(deviceSelectElement.value);
+	selectedDeviceID = deviceSelectElement.value;
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
 	if (USE_CHART === true) {
@@ -52,7 +52,7 @@ deviceSelectElement.addEventListener('change', function() {
 	}, 1000);
 	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = true;
 	socket.send(WebSocketEvent.onRequestHeartRates, selectedDeviceID);
-})
+});
 addDeviceButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
 	addDeviceNameElement.value = '';
@@ -61,9 +61,9 @@ addDeviceButtonElement.addEventListener('click', function(event) {
 removeDeviceButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
 	const device = getSelectedDevice();
-	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device.id + ']';
+	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device._id + ']';
 	removeModalJQueryElement.modal('show');
-});;
+});
 if (changeChartButtonElement) {
 	changeChartButtonElement.addEventListener('click', function() {
 		if (USE_CHART === true) {
@@ -71,8 +71,9 @@ if (changeChartButtonElement) {
 		}
 	});
 }
+/*
 xlsxDownloadButtonElement.addEventListener('click', function (event) {
-	event.preventDefault();
+	/!*event.preventDefault();
 	downloadWorkbook(WorkBookFileFormat.xlsx);
 });
 xlsbDownloadButtonElement.addEventListener('click', function (event) {
@@ -99,3 +100,4 @@ htmlDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	downloadWorkbook(WorkBookFileFormat.html);
 });
+*/

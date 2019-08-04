@@ -1,6 +1,6 @@
 export interface IPulseModel {
-    id?: number;
-    device_id: number;
+    _id?: string;
+    device_id: string;
     pulse: number;
     emitted_at: string | Date;
     created_at?: string | Date;

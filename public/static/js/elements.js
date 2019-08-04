@@ -23,6 +23,7 @@ const changeChartButtonElement = document.querySelector('#change-chart-button');
 const heartRateChartElement = document.querySelector('#heart-rate-chart');
 const addDeviceButtonElement = document.querySelector('#add-device-button');
 const removeDeviceButtonElement = document.querySelector('#remove-device-button');
+/*
 const xlsxDownloadButtonElement = document.querySelector('#xlsx-download-button');
 const xlsbDownloadButtonElement = document.querySelector('#xlsb-download-button');
 const xlsDownloadButtonElement = document.querySelector('#xls-download-button');
@@ -30,6 +31,7 @@ const csvDownloadButtonElement = document.querySelector('#csv-download-button');
 const odsDownloadButtonElement = document.querySelector('#ods-download-button');
 const fodsDownloadButtonElement = document.querySelector('#fods-download-button');
 const htmlDownloadButtonElement = document.querySelector('#html-download-button');
+*/
 const addDeviceNameElement = document.querySelector('#add-device-name');
 const removeDeviceNameElement = document.querySelector('#remove-device-name');
 const tableJQueryElement = $('.heart-rate-table');

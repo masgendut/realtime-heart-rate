@@ -1,5 +1,5 @@
 export interface IDeviceModel {
-    id?: number;
+    _id?: string;
     name: string;
     created_at?: string | Date;
     updated_at?: string | Date;
