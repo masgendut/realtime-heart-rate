@@ -38,7 +38,7 @@ class Database {
     		if (!(await schema.existsInDatabase())) {
     			schema = await session.createSchema(schemaName);
 			}
-    		const collections: CollectionList = {};
+    		const collections: {} = {};
     		for (const collectionName of this.collectionNameList) {
     			let collection: Collection = await schema.getCollection(collectionName);
     			if (!(await collection.existsInDatabase())) {
@@ -46,7 +46,10 @@ class Database {
     			}
     			collections[collectionName] = collection;
 			}
-			return { client, session, schema, collections };
+			return {
+    			client, session, schema,
+				collections: <Record<CollectionName, Collection>>collections
+    		};
 		} catch (error) {
     		throw error;
 		}
@@ -54,15 +57,13 @@ class Database {
 
 }
 
+type CollectionName = 'clients' | 'devices' | 'pulses' | 'pulse_arrivals' | 'sessions';
+
 type DatabaseSessionPackage = {
 	client: Client
 	session: Session
 	schema: Schema
-	collections: CollectionList
-}
-
-type CollectionList = {
-	[key: string]: Collection
+	collections: Record<CollectionName, Collection>
 }
 
 const database = new Database();

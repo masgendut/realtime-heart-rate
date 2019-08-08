@@ -22,7 +22,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { json, urlencoded } from 'body-parser';
 import WebSocket from 'ws';
-import UAParser from 'ua-parser';
+import UserAgent from 'useragent';
 
 /**
  * Import internal functions
@@ -58,7 +58,6 @@ const port = process.env.PORT || 9000;
 docs(app); // Show Swagger UI as documentation on '/docs' path
 app.use(json()); // Use JSON parser to parse JSON body as JavaScript object
 app.use(urlencoded({ extended: false })); // Parse body as URL Encoded format
-
 /**
  * Let Express serve front-end on "public" folder
  */
@@ -187,7 +186,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 		let frontEndSession: ISessionModel = {
 			_id: UUID.generate(),
 			client_id: request.body.clientId,
-			user_agent: UAParser.parse(request.headers['user-agent']),
+			user_agent: UserAgent.lookup(request.headers['user-agent']),
 			created_at: DateTime.formatDate()
 		};
 		frontEndSession = UUID.transformIdentifierToShort(frontEndSession);
@@ -239,7 +238,7 @@ app.use(notFound);
  * @param data WebSocketData The payload body data.
  * @return object WebSocket payload.
  */
-function createPayload(sessionID: string, event: WebSocketEvent, data?: WebSocketData): string {
+function createPayload(sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>): string {
 	return JSON.stringify({ sessionID, event, data })
 }
 
@@ -252,7 +251,7 @@ function createPayload(sessionID: string, event: WebSocketEvent, data?: WebSocke
  * @param event WebSocketEvent WebSocket Event defined by WebSocketEvent enum.
  * @param data WebSocketData The payload body data.
  */
-function serverSend(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData) {
+function serverSend(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>) {
 	socket.send(createPayload(sessionID, event, data))
 }
 
@@ -264,10 +263,14 @@ function serverSend(socket: WebSocket, sessionID: string, event: WebSocketEvent,
  * @param event WebSocketEvent WebSocket Event defined by WebSocketEvent enum.
  * @param data WebSocketData The payload body data.
  */
-function serverBroadcast(event: WebSocketEvent, data?: WebSocketData) {
+function serverBroadcast(event: WebSocketEvent, data?: WebSocketData<unknown>) {
 	webSocketServer.clients.forEach(function each(client) {
 		if (client.readyState === WebSocket.OPEN) {
-			serverSend(client, (<any>client).sessionID, event, data)
+			serverSend(
+				client,
+				(<{ sessionID: string }><unknown>client).sessionID,
+				event,
+				data);
 		}
 	});
 }
@@ -352,7 +355,7 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 				onError(socket, sessionID, new Error(warning.msg))
 			}
 		}
-		const success = addResult.getAffectedRowsCount() === 1;
+		const success = addResult.getAffectedItemsCount() === 1;
 		const message = success
 			? 'Device "' + name + '" has been successfully added!'
 			: 'Failed to add "' + name + '". ';
@@ -408,7 +411,7 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
 				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
-		const deleteDeviceResult = await collections.pulses
+		const deleteDeviceResult = await collections.devices
 			.removeByID(deviceID);
 		if (deleteDeviceResult.getWarningsCount() > 0) {
 			const warnings = deleteDeviceResult.getWarnings();
@@ -416,8 +419,8 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
 				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
-		const success = deletePulseResult.getAffectedRowsCount() === pulses.length
-			&& deleteDeviceResult.getAffectedRowsCount() === 1;
+		const success = deletePulseResult.getAffectedItemsCount() === pulses.length
+			&& deleteDeviceResult.getAffectedItemsCount() === 1;
 		const message = success
 			? 'Device "' + name + '" has been successfully removed!'
 			: 'Failed to remove "' + name + '". ';
@@ -528,25 +531,34 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
  * @param event WebSocketEvent WebSocket Event defined by WebSocketEvent enum.
  * @param data WebSocketData The payload body data.
  */
-async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData) {
+async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>) {
 	switch (event) {
 		case WebSocketEvent.onConnection:
 			onConnection(socket, sessionID);
 			break;
 		case WebSocketEvent.onArrivalHeartRate:
-			await onArrivalHeartRate(socket, sessionID, data.pulseID, data.timestamp);
+			const { pulseID, timestamp } = <{
+				pulseID: string,
+				timestamp: string
+			}>data;
+			await onArrivalHeartRate(socket, sessionID, pulseID, timestamp);
 			break;
 		case WebSocketEvent.onAddDevice:
-			await onAddDevice(socket, sessionID, data);
+			await onAddDevice(socket, sessionID, <string>data);
 			break;
 		case WebSocketEvent.onRemoveDevice:
-			await onRemoveDevice(socket, sessionID, data.deviceID, data.name);
+			const { deviceID, name } = <{
+				deviceID: string,
+				name: string
+			}>data;
+			await onRemoveDevice(socket, sessionID, deviceID, name);
 			break;
 		case WebSocketEvent.onRequestDevices:
 			await onRequestDevices(socket, sessionID);
 			break;
 		case WebSocketEvent.onRequestHeartRates:
-			await onRequestHeartRates(socket, sessionID, data);
+			const deviceID_ = <string>data;
+			await onRequestHeartRates(socket, sessionID, deviceID_);
 			break;
 	}
 }
@@ -560,8 +572,8 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
  * @param sessionID string Session identifier of the client.
  * @param e Error The Error object raised from an error.
  */
-function onError(socket: WebSocket, sessionID: string | null, e: any) {
-	const message = e.message || 'Internal server error.';
+function onError(socket: WebSocket, sessionID: string | null, e: unknown) {
+	const message = (<Error>e).message || 'Internal server error.';
 	const error = { message };
 	console.error(e);
 	serverSend(socket, <string>sessionID, WebSocketEvent.onError, error);
@@ -591,7 +603,7 @@ webSocketServer.on('connection', function(socket) {
 				serverSend(socket, sessionID, WebSocketEvent.onInvalidSession, sessionID);
 				return;
 			}
-			(<any>socket).sessionID = sessionID;
+			(<{ sessionID: string }><unknown>socket).sessionID = sessionID;
 			if (!event) {
 				serverSend(socket, sessionID, WebSocketEvent.onInvalidEvent);
 				return;
@@ -634,4 +646,4 @@ enum WebSocketEvent {
  * Type WebSocketData defines data that might be sent by WebSocket server and
  * clients.
  */
-type WebSocketData = any;
+type WebSocketData<T> = T;

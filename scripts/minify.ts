@@ -1,10 +1,11 @@
-import fs from 'fs'
+import fs from 'fs';
 import path from 'path';
-import UglifyJS from 'uglify-es'
+import UglifyJS from 'uglify-es';
 
-const featureFilesLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js')
+const featureFilesLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js');
 const featureFiles: string[] = [
 	'clientIdentifier.js',
+	'publicVapidKey.js',
 	'dateTime.js',
 	'elements.js',
 	'alertManipulation.js',
@@ -13,12 +14,13 @@ const featureFiles: string[] = [
 	'chartManipulation.js',
 	'offlineStorage.js',
 	'sessionManager.js',
+	'pushNotificationService.js',
 	'webSocket.js',
 	'eventListener.js',
 	'main.js'
-]
+];
 
-const code: { [k: string]: string } = {}
+const code: { [k: string]: string } = {};
 const options: UglifyJS.MinifyOptions = {
 	toplevel: true,
 	ie8: true,
@@ -40,26 +42,28 @@ const options: UglifyJS.MinifyOptions = {
  * limitations under the License.
  */`
 	}
-}
+};
 
 for (const featureFile of featureFiles) {
 	try {
-		const featureCode = fs.readFileSync(path.join(featureFilesLocation, featureFile), 'utf-8')
-		code[featureFile] = featureCode
+		const featureFileLocation: fs.PathLike = path.join(featureFilesLocation, featureFile);
+		if (fs.existsSync(featureFileLocation)) {
+			code[featureFile] = fs.readFileSync(featureFileLocation, 'utf-8');
+		}
 	} catch (error) {
-		console.log(error)
-		process.exit(1)
+		console.log(error);
+		process.exit(1);
 	}
 }
 
-const result: UglifyJS.MinifyOutput = UglifyJS.minify(code, options)
+const result: UglifyJS.MinifyOutput = UglifyJS.minify(code, options);
 
 if (result.error) {
-	console.log(result.error)
-	process.exit(2)
+	console.log(result.error);
+	process.exit(2);
 }
 
-const minifiedCode = result.code
+const minifiedCode = result.code;
 fs.writeFileSync(path.join(featureFilesLocation, 'application.min.js'), minifiedCode, {
 	encoding: 'utf-8'
-})
+});

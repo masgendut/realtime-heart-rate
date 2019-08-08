@@ -1,15 +1,19 @@
+
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 import DatabaseHelpers from '../src/helpers/database';
-import IClientModel from '../src/models/IClientModel';
-import UUID from '../src/helpers/uuid';
 import DateTime from '../src/helpers/datetime';
-import fs from "fs";
-import path from "path";
+import UUID from '../src/helpers/uuid';
+import IClientModel from '../src/models/IClientModel';
+
+dotenv.config();
 
 const clientNameList = [
 	'Web Front-End',
 	'Emitter/Tester'
 ];
-const webClientIdentifierFileLocation: fs.PathLike
+const clientIdentifierFileLocation: fs.PathLike
 	= path.join(__dirname, '..', 'public', 'static', 'js', 'clientIdentifier.js');
 const clientsFileLocation: fs.PathLike = path.join(__dirname, '..', 'clients.json');
 
@@ -39,11 +43,11 @@ async function createClients() {
 			console.log('Created Client "' + clientName + '" with ID ' + frontEndClient._id);
 		}
 		await collections.sessions.remove().execute();
-		const webClientIdentifierFileContent: string
+		const clientIdentifierFileContent: string
 			= `const CLIENT_IDENTIFIER = '${ frontEndClients[0]._id }';`;
 		fs.writeFileSync(
-			webClientIdentifierFileLocation,
-			webClientIdentifierFileContent,
+			clientIdentifierFileLocation,
+			clientIdentifierFileContent,
 			{ encoding: 'utf-8' });
 		fs.writeFileSync(
 			clientsFileLocation,
