@@ -38,10 +38,10 @@ function main() {
 			return !needsUpgrade;
 		})
 		.then((shouldInitialiseApp) => {
-			if (hasGarbageMemory()) {
-				askToCleanUp();
-			}
 			if (shouldInitialiseApp) {
+				if (hasGarbageMemory()) {
+					askToCleanUp();
+				}
 				initialiseApp();
 			}
 		})
