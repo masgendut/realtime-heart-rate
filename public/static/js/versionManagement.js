@@ -150,7 +150,7 @@ async function upgradeToVersion2() {
 		const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/client-upgrade';
 		const response = {
 			success: true,
-			message: ''
+			message: '',
 		};
 		for (const data of localPulses) {
 			const result = await $.ajax({

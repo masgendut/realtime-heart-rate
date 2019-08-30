@@ -47,7 +47,7 @@
 		"prettify": "prettier ./src/**/*.ts ./scripts/*.ts ./public/static/js/*.js --write",
 		"start": "npm run minify silent && ts-node src/app.ts",
 		"dev": "nodemon",
-		"build": "npm run prettify && tsc && npm run minify silent"
+		"build": "tsc && npm run minify silent"
 	},
 	"optionalDependencies": {
 		"bufferutil": "^4.0.1",
