@@ -107,9 +107,11 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 		if (isNumber(request.query.deviceId) || isNumber(parseInt(request.query.deviceId))) {
 			// This means it is old device ID.
 			const result = await collections.devices
-				.find({ old_id: request.query.deviceId })
+				.find()
 				.execute();
-			if (result.getDocuments().length > 0) {
+			const devices: IDeviceModel[] = <IDeviceModel[]> result.getDocuments();
+			const device = devices.find(d => d.old_id === parseInt(request.query.deviceId));
+			if (!!device) {
 				request.query.deviceId = (<IDeviceModel> result.getDocuments()[0])._id
 			} else {
 				return response.status(404).json({

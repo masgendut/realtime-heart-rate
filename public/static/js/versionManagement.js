@@ -114,7 +114,7 @@ async function upgradeToVersion2() {
 			const localPulse = await getLocal(localPulseKey);
 			localPulses.push({
 				old_id: localPulse.pulse.id,
-				arrived_at: localPulse.receivedAt.getTime()
+				arrived_at: new Date(localPulse.receivedAt).getTime()
 			});
 		}
 		await initialiseSession();
@@ -133,9 +133,9 @@ async function upgradeToVersion2() {
 		});
 		const { success, message } = result;
 		if (success) {
-			for (const localPulseKey of LOCAL_PULSE_KEYS) {
-				await deleteLocal(localPulseKey);
-			}
+			// for (const localPulseKey of LOCAL_PULSE_KEYS) {
+			// 	await deleteLocal(localPulseKey);
+			// }
 		} else {
 			throw new Error(message);
 		}
