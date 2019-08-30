@@ -146,7 +146,9 @@ async function upgradeToVersion2() {
 			}),
 		});
 		const { success, message } = result;
-		if (!success) {
+		if (success) {
+			await putLocal('app-version', targetVersion);
+		} else {
 			throw new Error(message);
 		}
 	} catch (error) {
