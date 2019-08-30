@@ -59,7 +59,7 @@ function askToUpgrade() {
 
 function askToCleanUp() {
 	showAlert(
-		AlertType.Warning,
+		AlertType.Secondary,
 		'<b>Clean up unused old data</b></br>' +
 			'This application has been upgraded; but it leaves unused old data in your browser. You may clean it up to save disk space.</br></br>' +
 			'<button type="button" class="btn btn-primary btn-sm" onclick="confirmCleanUp()">Clean Up Old Data</button>',
@@ -127,11 +127,11 @@ async function upgradeToVersion2() {
 		for (const localPulseKey of LOCAL_PULSE_KEYS) {
 			const localPulse = await getLocal(localPulseKey);
 			const arrivedAt = localPulse.receivedAt.getTime();
-			const localOffset = (-1) * localPulse.receivedAt.getTimezoneOffset() * 60000;
-			const timestamp = Math.round(new Date(arrivedAt + localOffset).getTime() / 1000);
+			const localOffset = -1 * localPulse.receivedAt.getTimezoneOffset() * 60000;
+			const timestamp = new Date(arrivedAt + localOffset).getTime();
 			localPulses.push({
 				old_id: localPulse.pulse.id,
-				arrived_at: timestamp
+				arrived_at: timestamp,
 			});
 		}
 		await initialiseSession();
