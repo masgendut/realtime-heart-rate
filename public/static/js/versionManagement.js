@@ -138,11 +138,11 @@ async function upgradeToVersion2() {
 			}
 			const localPulse = await getLocal(localPulseKey);
 			const arrivedAt = localPulse.receivedAt.getTime();
-			const localOffset = -1 * localPulse.receivedAt.getTimezoneOffset() * 60000;
-			const timestamp = new Date(arrivedAt + localOffset).getTime();
+			// const localOffset = -1 * localPulse.receivedAt.getTimezoneOffset() * 60000;
+			// const timestamp = new Date(arrivedAt + localOffset).getTime();
 			localPulses[localPulseIndex].push({
 				old_id: localPulse.pulse.id,
-				arrived_at: timestamp,
+				arrived_at: arrivedAt,
 			});
 			allIndex++;
 		}
