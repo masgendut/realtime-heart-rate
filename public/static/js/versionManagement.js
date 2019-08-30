@@ -94,6 +94,12 @@ async function doUpgrade() {
 				upgrade = false;
 			}
 		}
+		showAlert(
+			AlertType.Info,
+			'<b>Application upgrade is in process...</b></br>' +
+				'Please do not exit or refresh web browser until the process is finished. Also make sure your internet access is always active. Otherwise upgrade may failed.',
+			true
+		);
 		for (const targetVersion of upgradeList) {
 			console.log('INFO: Upgrading application to version ' + targetVersion + '.');
 			switch (targetVersion) {
@@ -124,35 +130,51 @@ async function upgradeToVersion2() {
 	const targetVersion = VERSION_LIST[1];
 	try {
 		const localPulses = [];
+		let allIndex = 0;
 		for (const localPulseKey of LOCAL_PULSE_KEYS) {
+			const localPulseIndex = Math.floor(allIndex / 100);
+			if (allIndex % 100 === 0) {
+				localPulses.push([]);
+			}
 			const localPulse = await getLocal(localPulseKey);
 			const arrivedAt = localPulse.receivedAt.getTime();
 			const localOffset = -1 * localPulse.receivedAt.getTimezoneOffset() * 60000;
 			const timestamp = new Date(arrivedAt + localOffset).getTime();
-			localPulses.push({
+			localPulses[localPulseIndex].push({
 				old_id: localPulse.pulse.id,
 				arrived_at: timestamp,
 			});
+			allIndex++;
 		}
 		await initialiseSession();
 		const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/client-upgrade';
-		const result = await $.ajax({
-			url: serverURI,
-			type: 'POST',
-			dataType: 'json',
-			contentType: 'application/json',
-			data: JSON.stringify({
-				currentVersion: CURRENT_APP_VERSION,
-				targetVersion,
-				sessionId: SESSION_IDENTIFIER,
-				data: localPulses,
-			}),
-		});
-		const { success, message } = result;
-		if (success) {
+		const response = {
+			success: true,
+			message: ''
+		};
+		for (const data of localPulses) {
+			const result = await $.ajax({
+				url: serverURI,
+				type: 'POST',
+				dataType: 'json',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					currentVersion: CURRENT_APP_VERSION,
+					targetVersion,
+					sessionId: SESSION_IDENTIFIER,
+					data,
+				}),
+			});
+			const { success, message } = result;
+			if (!success) {
+				response.success = success;
+				response.message = message;
+			}
+		}
+		if (response.success) {
 			await putLocal('app-version', targetVersion);
 		} else {
-			throw new Error(message);
+			throw new Error(response.message);
 		}
 	} catch (error) {
 		if (!error.message) {
@@ -167,6 +189,12 @@ async function upgradeToVersion2() {
 }
 
 async function doCleanUp() {
+	showAlert(
+		AlertType.Info,
+		'<b>Clean up is in process...</b></br>' +
+			'Please do not exit or refresh web browser until the process is finished. Otherwise clean up may failed.',
+		true
+	);
 	try {
 		for (const localPulseKey of LOCAL_PULSE_KEYS) {
 			await deleteLocal(localPulseKey);
