@@ -58,7 +58,7 @@ export async function migrateUp() {
 		}
 		await collections.sessions.remove().execute();
 		const webClientIdentifierFileContent: string = `const CLIENT_IDENTIFIER = '${frontEndClients[0]._id}';`;
-		const webAppVersionFileContent: string = `const APP_VERSION = '${appVersion}';${ versionListContent }`;
+		const webAppVersionFileContent: string = `const APP_VERSION = '${appVersion}';${versionListContent}`;
 		fs.writeFileSync(webClientIdentifierFileLocation, webClientIdentifierFileContent, { encoding: 'utf-8' });
 		fs.writeFileSync(webAppVersionFileLocation, webAppVersionFileContent, { encoding: 'utf-8' });
 		fs.writeFileSync(clientsFileLocation, JSON.stringify({ clients: frontEndClients }, null, 4), { encoding: 'utf-8' });

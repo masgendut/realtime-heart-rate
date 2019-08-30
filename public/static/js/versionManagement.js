@@ -23,18 +23,20 @@ async function isRequireUpgrade() {
 		for (const localKey of localKeys) {
 			if (localKey.substr(0, 6) === 'pulse-') {
 				LOCAL_PULSE_KEYS.push(localKey);
-			} 
+			}
 		}
 		if (CURRENT_APP_VERSION === null) {
-			CURRENT_APP_VERSION = LOCAL_PULSE_KEYS.length === 0 
-				? APP_VERSION
-				: '1.0.0';
+			CURRENT_APP_VERSION = hasGarbageMemory() ? '1.0.0' : APP_VERSION;
 		}
 		printVersion();
 		return CURRENT_APP_VERSION !== APP_VERSION;
 	} catch (error) {
 		throw error;
 	}
+}
+
+function hasGarbageMemory() {
+	return LOCAL_PULSE_KEYS.length > 0;
 }
 
 function printVersion() {
@@ -55,9 +57,25 @@ function askToUpgrade() {
 	);
 }
 
+function askToCleanUp() {
+	showAlert(
+		AlertType.Warning,
+		'<b>Clean up unused old data</b></br>' +
+			'This application has been upgraded; but it leaves unused old data in your browser. You may clean it up to save disk space.</br></br>' +
+			'<button type="button" class="btn btn-primary btn-sm" onclick="confirmCleanUp()">Clean Up Old Data</button>',
+		true
+	);
+}
+
 async function confirmUpgrade() {
 	if (confirm('This application will be upgraded. You cannot rollback changes.\n\nPress OK to upgrade.')) {
-		doUpgrade();
+		await doUpgrade();
+	}
+}
+
+async function confirmCleanUp() {
+	if (confirm('You will clean up unused old data. You cannot rollback changes.\n\nPress OK to clean up.')) {
+		await doCleanUp();
 	}
 }
 
@@ -97,11 +115,7 @@ async function doUpgrade() {
 			true
 		);
 	} catch (error) {
-		showAlert(
-			AlertType.Danger,
-			'<b>Failed to upgrade application</b></br>' + error.message,
-			true
-		);
+		showAlert(AlertType.Danger, '<b>Failed to upgrade application</b></br>' + error.message, true);
 		console.log('ERROR: ' + error.message);
 	}
 }
@@ -114,7 +128,7 @@ async function upgradeToVersion2() {
 			const localPulse = await getLocal(localPulseKey);
 			localPulses.push({
 				old_id: localPulse.pulse.id,
-				arrived_at: new Date(localPulse.receivedAt).getTime()
+				arrived_at: new Date(localPulse.receivedAt).getTime(),
 			});
 		}
 		await initialiseSession();
@@ -123,32 +137,39 @@ async function upgradeToVersion2() {
 			url: serverURI,
 			type: 'POST',
 			dataType: 'json',
-			contentType: "application/json",
+			contentType: 'application/json',
 			data: JSON.stringify({
 				currentVersion: CURRENT_APP_VERSION,
 				targetVersion,
 				sessionId: SESSION_IDENTIFIER,
-				data: localPulses
+				data: localPulses,
 			}),
 		});
 		const { success, message } = result;
-		if (success) {
-			// for (const localPulseKey of LOCAL_PULSE_KEYS) {
-			// 	await deleteLocal(localPulseKey);
-			// }
-		} else {
+		if (!success) {
 			throw new Error(message);
 		}
 	} catch (error) {
 		if (!error.message) {
 			const isXHR = error.readyState === 4 && error.responseJSON;
-			error.message = isXHR
-				? error.responseJSON.message
-				: 'Unknown error occured.';
+			error.message = isXHR ? error.responseJSON.message : 'Unknown error occured.';
 			if (!isXHR) {
 				console.error(error);
 			}
 		}
 		throw error;
+	}
+}
+
+async function doCleanUp() {
+	try {
+		for (const localPulseKey of LOCAL_PULSE_KEYS) {
+			await deleteLocal(localPulseKey);
+		}
+		console.log('INFO: Successfully cleaned up old data.');
+		showAlert(AlertType.Success, '<b>Old data has been cleaned up</b></br>' + 'You may continue using this application as usual.', true);
+	} catch (error) {
+		showAlert(AlertType.Danger, '<b>Failed to clean up old data</b></br>' + error.message, true);
+		console.log('ERROR: ' + error.message);
 	}
 }

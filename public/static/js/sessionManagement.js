@@ -23,7 +23,7 @@ async function initialiseSession(forceInitialisation = false) {
 			url: serverURI,
 			type: 'POST',
 			dataType: 'json',
-			contentType: "application/json",
+			contentType: 'application/json',
 			data: JSON.stringify({ clientId: CLIENT_IDENTIFIER }),
 		});
 		session = result.data;
