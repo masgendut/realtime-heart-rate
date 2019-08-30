@@ -126,9 +126,12 @@ async function upgradeToVersion2() {
 		const localPulses = [];
 		for (const localPulseKey of LOCAL_PULSE_KEYS) {
 			const localPulse = await getLocal(localPulseKey);
+			const arrivedAt = localPulse.receivedAt.getTime();
+			const localOffset = (-1) * localPulse.receivedAt.getTimezoneOffset() * 60000;
+			const timestamp = Math.round(new Date(arrivedAt + localOffset).getTime() / 1000);
 			localPulses.push({
 				old_id: localPulse.pulse.id,
-				arrived_at: new Date(localPulse.receivedAt).getTime(),
+				arrived_at: timestamp
 			});
 		}
 		await initialiseSession();
