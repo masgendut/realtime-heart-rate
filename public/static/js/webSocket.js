@@ -25,7 +25,7 @@ const WebSocketEvent = {
 	onRequestHeartRates: 'HEART_RATES_REQUEST',
 	onRetrieveHeartRates: 'HEART_RATES_RETRIEVE',
 	onError: 'ERROR',
-	onInvalidSession: 'SESSION_INVALID'
+	onInvalidSession: 'SESSION_INVALID',
 };
 
 let socket;
@@ -34,12 +34,12 @@ let savedPulses = [];
 let savedDevices = [];
 let lastPulseReceived = new Date();
 let selectedDeviceID = null;
-let areWaitingResponses = { };
+let areWaitingResponses = {};
 let socketStates = {};
 let welcomeMessage = '';
 
 function getSelectedDevice() {
-	return savedDevices.find(dev => dev._id === selectedDeviceID);
+	return savedDevices.find((dev) => dev._id === selectedDeviceID);
 }
 
 function onConnection(message) {
@@ -47,6 +47,8 @@ function onConnection(message) {
 	console.log(welcomeMessage);
 	createToast(ToastType.Success, welcomeMessage);
 	addDeviceButtonElement.disabled = false;
+	deviceSelectElement.innerHTML = '<option selected disabled>Getting device data...</option>';
+	deviceSelectElement.disabled = true;
 	socket.send(WebSocketEvent.onRequestDevices);
 }
 
@@ -65,10 +67,14 @@ function onRemoveDevice() {
 	const device = getSelectedDevice();
 	removeModalJQueryElement.modal('hide');
 	createToast(ToastType.Information, 'Removing device "' + device.name + '"...');
-	socket.send(WebSocketEvent.onRemoveDevice, {
-		deviceID: device._id,
-		name: device.name
-	}, onResponseEvent);
+	socket.send(
+		WebSocketEvent.onRemoveDevice,
+		{
+			deviceID: device._id,
+			name: device.name,
+		},
+		onResponseEvent
+	);
 }
 
 function onAfterAddRemoveDevice(success, message) {
@@ -76,12 +82,9 @@ function onAfterAddRemoveDevice(success, message) {
 }
 
 async function onEmitHeartRate(pulse) {
-	const now = (new Date()).getTime();
+	const now = new Date().getTime();
 	socket.send(WebSocketEvent.onArrivalHeartRate, { pulseID: pulse._id, timestamp: now });
-	if (
-		selectedDeviceID !== null &&
-		pulse.device_id === selectedDeviceID
-	) {
+	if (selectedDeviceID !== null && pulse.device_id === selectedDeviceID) {
 		lastPulseReceived = now;
 		const transportDelay = (lastPulseReceived - pulse.emitted_at) / 1000;
 		heartRateElement.innerHTML = pulse.pulse;
@@ -89,18 +92,8 @@ async function onEmitHeartRate(pulse) {
 		if (USE_CHART === true) {
 			pushChartData(pulse.pulse, transportDelay);
 		}
-		const rawRow = [
-			pulse.pulse,
-			pulse.emitted_at,
-			lastPulseReceived,
-			transportDelay
-		];
-		const row = [
-			rawRow[0],
-			formatDate(rawRow[1]),
-			formatDate(rawRow[2]),
-			rawRow[3].toLocaleString('id-ID').concat(' s')
-		];
+		const rawRow = [pulse.pulse, pulse.emitted_at, lastPulseReceived, transportDelay];
+		const row = [rawRow[0], formatDate(rawRow[1]), formatDate(rawRow[2]), rawRow[3].toLocaleString('id-ID').concat(' s')];
 		savedRawPulses.reverse();
 		savedRawPulses.push(rawRow);
 		savedPulses.reverse();
@@ -118,25 +111,16 @@ function onRetrieveDevices(devices) {
 	savedDevices = devices;
 	let deviceSelectHTML = '';
 	for (const device of devices) {
-		deviceSelectHTML = deviceSelectHTML + '<option value="' + device._id + '">'
-			+ device.name + ' [ID: ' + device._id + ']' + '</option>';
+		deviceSelectHTML = deviceSelectHTML + '<option value="' + device._id + '">' + device.name + ' [ID: ' + device._id + ']' + '</option>';
 	}
-	const firstOption = savedDevices.length > 0
-		? 'Select a device...'
-		: 'No device available.';
-	deviceSelectElement.innerHTML =
-		'<option selected disabled>' + firstOption + '</option>' +
-		deviceSelectHTML;
+	const firstOption = savedDevices.length > 0 ? 'Select a device...' : 'No device available.';
+	deviceSelectElement.innerHTML = '<option selected disabled>' + firstOption + '</option>' + deviceSelectHTML;
 	deviceSelectElement.disabled = savedDevices.length === 0;
 }
 
 async function onRetrieveHeartRates(pulses) {
 	if (pulses.length === 0) {
-		setDataTableText(
-			'There are no any heart rates data for '
-			+ getSelectedDevice().name + ' [ID: '
-			+ getSelectedDevice()._id + '].'
-		);
+		setDataTableText('There are no any heart rates data for ' + getSelectedDevice().name + ' [ID: ' + getSelectedDevice()._id + '].');
 		savedPulses = [];
 		areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 		return;
@@ -145,26 +129,17 @@ async function onRetrieveHeartRates(pulses) {
 	const rows = [];
 	for (const pulse of pulses) {
 		pulse.arrived_at = pulse.arrived_at ? pulse.arrived_at : null;
-		const transportDelay = pulse.arrived_at
-			? (pulse.arrived_at - pulse.emitted_at) / 1000
-			: null;
-		const rawRow = [
-			pulse.pulse,
-			pulse.emitted_at,
-			pulse.arrived_at,
-			transportDelay
-		];
+		const transportDelay = pulse.arrived_at ? (pulse.arrived_at - pulse.emitted_at) / 1000 : null;
+		const rawRow = [pulse.pulse, pulse.emitted_at, pulse.arrived_at, transportDelay];
 		const row = [
 			rawRow[0],
 			formatDate(rawRow[1]),
-			rawRow[2] === null
-				? 'N/A'
-				: formatDate(rawRow[2]),
+			rawRow[2] === null ? 'N/A' : formatDate(rawRow[2]),
 			rawRow[3] === null
 				? 'N/A'
 				: parseFloat(rawRow[3])
-					.toLocaleString('id-ID')
-					.concat(' s')
+						.toLocaleString('id-ID')
+						.concat(' s'),
 		];
 		rawRows.push(rawRow);
 		rows.push(row);
@@ -202,7 +177,7 @@ function onResponseEvent(event, data) {
 }
 
 function onError(error) {
-	const message = (error.message || error.sqlMessage || 'An unexpected unknown error happened.');
+	const message = error.message || error.sqlMessage || 'An unexpected unknown error happened.';
 	console.log('ERROR: ' + message);
 	showAlert(AlertType.Danger, 'ERROR: ' + message, true);
 	createToast(ToastType.Error, message);
@@ -215,28 +190,22 @@ function onInvalidSession() {
 }
 
 function startWebSocket() {
-	const serverURI =
-		(window.location.protocol === 'https:' ? 'wss:' : 'ws:')+
-		'//' +
-		window.location.hostname +
-		':' +
-		window.location.port +
-		'/';
-	socket = new WebSocket(serverURI)
+	const serverURI = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + ':' + window.location.port + '/';
+	socket = new WebSocket(serverURI);
 	const _internalSend = socket.send;
 	socket.send = (event, data) => {
-		_internalSend.call(socket, JSON.stringify({
-			sessionID: SESSION_IDENTIFIER,
-			event: event,
-			data: data
-		}));
+		_internalSend.call(
+			socket,
+			JSON.stringify({
+				sessionID: SESSION_IDENTIFIER,
+				event: event,
+				data: data,
+			})
+		);
 	};
 	socket.onopen = function() {
 		function ping() {
-			createToast(
-				ToastType.Warning,
-				'Real-Time connection to server opened. Waiting for a response...'
-			);
+			createToast(ToastType.Warning, 'Real-Time connection to server opened. Waiting for a response...');
 			socket.send(WebSocketEvent.onConnection);
 		}
 		if (socketStates.reconnect !== true) {
@@ -244,10 +213,7 @@ function startWebSocket() {
 		} else {
 			if (welcomeMessage !== '') {
 				console.log(welcomeMessage);
-				createToast(
-					ToastType.Success,
-					welcomeMessage
-				);
+				createToast(ToastType.Success, welcomeMessage);
 			} else {
 				ping();
 			}
@@ -258,13 +224,13 @@ function startWebSocket() {
 		addDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.disabled = true;
 		console.log('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
-		createToast(
-			ToastType.Warning,'Disconnected from Real-Time server! Retrying to connect...'
-		);
+		createToast(ToastType.Warning, 'Disconnected from Real-Time server! Retrying to connect...');
 		socketStates.reconnect = true;
-		setTimeout(function() { startWebSocket(); }, 1000);
+		setTimeout(function() {
+			startWebSocket();
+		}, 1000);
 	};
-	socket.onmessage = messageEvent => {
+	socket.onmessage = (messageEvent) => {
 		const { sessionID, event, data } = JSON.parse(messageEvent.data);
 		if (!event) {
 			return;

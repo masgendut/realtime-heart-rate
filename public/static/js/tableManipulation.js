@@ -17,9 +17,7 @@ let datatable = null;
 
 function addDataTableRows(rows) {
 	if (!Array.isArray(rows)) {
-		console.log(
-			'Rows on Data Table "addDataTableRows" is not an array. Parsing failed!'
-		);
+		console.log('Rows on Data Table "addDataTableRows" is not an array. Parsing failed!');
 		return;
 	}
 	datatable.clear();
@@ -34,8 +32,8 @@ function setDataTableText(text) {
 	datatable = tableJQueryElement.DataTable({
 		data: [],
 		language: {
-			emptyTable: text
+			emptyTable: text,
 		},
-		ordering: false
+		ordering: false,
 	});
 }

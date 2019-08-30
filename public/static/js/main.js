@@ -14,13 +14,43 @@
  */
 
 function main() {
-	if (!CLIENT_IDENTIFIER) {
-		showAlert(AlertType.Danger, 'This application cannot be run because have no Client Identifier to connect to the server. This problem arise because of wrong application build process. Contact the developer or technical support to fix this application.', true);
+	if (typeof APP_VERSION === 'undefined' || !APP_VERSION) {
+		showAlert(
+			AlertType.Danger,
+			'<b>This application cannot be run because have no metadata information</b></br>This problem arise because of incorrect application build process. Contact the developer or technical support to fix this problem.',
+			true
+		);
 		return;
 	}
+	if (typeof CLIENT_IDENTIFIER === 'undefined' || !CLIENT_IDENTIFIER) {
+		showAlert(
+			AlertType.Danger,
+			'<b>This application cannot be run because have no Client Identifier to connect to the server</b></br>This problem arise because of incorrect application build process. Contact the developer or technical support to fix this problem.',
+			true
+		);
+		return;
+	}
+	isRequireUpgrade()
+		.then((needsUpgrade) => {
+			if (needsUpgrade) {
+				askToUpgrade();
+			}
+			return !needsUpgrade;
+		})
+		.then((shouldInitialiseApp) => {
+			if (shouldInitialiseApp) {
+				initialiseApp();
+			}
+		})
+		.catch((error) => {
+			createToast(ToastType.Error, error, 'Application Error');
+		});
+}
+
+function initialiseApp() {
 	initialiseSession().then(() => {
 		setInterval(function() {
-			const timeDiff = (new Date()).getTime() - lastPulseReceived;
+			const timeDiff = new Date().getTime() - lastPulseReceived;
 			if (timeDiff > 5000) {
 				heartRateElement.innerHTML = '0';
 				heartRateEmitTimeElement.innerHTML = '';
@@ -44,9 +74,11 @@ function main() {
 		main();
 	} catch (error) {
 		if (error instanceof SyntaxError) {
-			showAlert(AlertType.Danger,
+			showAlert(
+				AlertType.Danger,
 				'Your browser does not support this website. Please update to more modern browser for this website to run.',
-				true);
+				true
+			);
 		} else {
 			showAlert(AlertType.Danger, error.message, true);
 			console.error(error);

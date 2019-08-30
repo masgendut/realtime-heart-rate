@@ -14,57 +14,53 @@
  */
 
 import DatabaseConfig from '../config/database.config';
-import Client from '../database/Client';
-import Session from '../database/Session';
-import Schema from '../database/Schema';
-import Collection from '../database/Collection';
+import mysqlx, { Client, Collection, Schema, Session, Table } from 'mysqlx';
 
 class Database {
-
 	private readonly collectionNameList: string[];
 
 	constructor() {
-		this.collectionNameList = [
-			'clients', 'devices', 'pulses', 'pulse_arrivals', 'sessions'
-		];
+		this.collectionNameList = ['applications', 'clients', 'devices', 'pulses', 'pulse_arrivals', 'sessions'];
 	}
 
-    public async prepareDatabase(): Promise<DatabaseSessionPackage> {
-    	try {
-			const client = new Client(DatabaseConfig.connectionOptions, DatabaseConfig.poolingOptions);
-    		const schemaName: string = (DatabaseConfig.connectionOptions as any).schema;
-    		const session: Session = await client.getSession();
-    		let schema: Schema = session.getSchema(schemaName);
-    		if (!(await schema.existsInDatabase())) {
-    			schema = await session.createSchema(schemaName);
+	public async getSessionPackage(): Promise<DatabaseSessionPackage> {
+		try {
+			const client = mysqlx.getClient(DatabaseConfig.connectionOptions, DatabaseConfig.poolingOptions);
+			const schemaName: string = (DatabaseConfig.connectionOptions as any).schema;
+			const session: Session = await client.getSession();
+			let schema: Schema = session.getSchema(schemaName);
+			if (!(await schema.existsInDatabase())) {
+				schema = await session.createSchema(schemaName);
 			}
-    		const collections: {} = {};
-    		for (const collectionName of this.collectionNameList) {
-    			let collection: Collection = await schema.getCollection(collectionName);
-    			if (!(await collection.existsInDatabase())) {
+			const collections: { [key: string]: Collection } = {};
+			for (const collectionName of this.collectionNameList) {
+				let collection: Collection = await schema.getCollection(collectionName);
+				if (!(await collection.existsInDatabase())) {
 					collection = await schema.createCollection(collectionName);
-    			}
-    			collections[collectionName] = collection;
+				}
+				collections[collectionName] = collection;
 			}
 			return {
-    			client, session, schema,
-				collections: <Record<CollectionName, Collection>>collections
-    		};
+				client,
+				session,
+				schema,
+				collections: <Record<CollectionName, Collection>>collections,
+			};
 		} catch (error) {
-    		throw error;
+			throw error;
 		}
 	}
-
 }
 
 type CollectionName = 'clients' | 'devices' | 'pulses' | 'pulse_arrivals' | 'sessions';
+type TableName = 'old_devices' | 'old_pulses';
 
 type DatabaseSessionPackage = {
-	client: Client
-	session: Session
-	schema: Schema
-	collections: Record<CollectionName, Collection>
-}
+	client: Client;
+	session: Session;
+	schema: Schema;
+	collections: Record<CollectionName, Collection>;
+};
 
 const database = new Database();
 export default database;

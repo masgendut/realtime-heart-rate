@@ -23,12 +23,13 @@ import express from 'express';
 import { json, urlencoded } from 'body-parser';
 import WebSocket from 'ws';
 import UserAgent from 'useragent';
+import isNumber from 'lodash.isnumber';
 
 /**
  * Import internal functions
  */
 import { docs } from './docs';
-import DatabaseHelper from './helpers/database';
+import Database from './helpers/database';
 import DateTime from './helpers/datetime';
 import { router, favicon, notFound } from "./helpers/express";
 import UUID from './helpers/uuid';
@@ -72,7 +73,7 @@ onApp.get('/', true).handle(async (request, response) => {
 /**
  * Create client connection to the database and set the database time system to use UTC
  */
-DatabaseHelper.prepareDatabase().then(({ client, session }) => {
+Database.getSessionPackage().then(({ client, session }) => {
 	return session.startTransaction()
 		.then(() => {
 			return session.sql('SET time_zone=\'+00:00\';').execute();
@@ -101,16 +102,32 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 			});
 		}
 	}
-	let pulse: IPulseModel = {
-		_id: UUID.generate(),
-		device_id: request.query.deviceId,
-		pulse: parseFloat(request.query.pulse),
-		emitted_at: DateTime.formatDate(parseInt(request.query.timestamp)),
-		created_at: DateTime.formatDate()
-	};
-	pulse = UUID.transformIdentifierToShort(pulse);
-	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, session, collections } = await Database.getSessionPackage();
 	try {
+		if (isNumber(request.query.deviceId) || isNumber(parseInt(request.query.deviceId))) {
+			// This means it is old device ID.
+			const result = await collections.devices
+				.find({ old_id: request.query.deviceId })
+				.execute();
+			if (result.getDocuments().length > 0) {
+				request.query.deviceId = (<IDeviceModel> result.getDocuments()[0])._id
+			} else {
+				return response.status(404).json({
+					success: false,
+					code: 404,
+					message:
+						'Device with ID ' + request.query.deviceId + ' is not found.'
+				});
+			}
+		}
+		let pulse: IPulseModel = {
+			_id: UUID.generate(),
+			device_id: request.query.deviceId,
+			pulse: parseFloat(request.query.pulse),
+			emitted_at: DateTime.formatDate(parseInt(request.query.timestamp)),
+			created_at: DateTime.formatDate()
+		};
+		pulse = UUID.transformIdentifierToShort(pulse);
 		const device = await collections.devices
 			.findByID(pulse.device_id);
 		if (!device) {
@@ -132,7 +149,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 				message: warnings[0].msg
 			});
 		}
-		pulse = await collections.pulses.findByID(<string>pulse._id);
+		pulse = <IPulseModel>await collections.pulses.findByID(<string>pulse._id) ;
 		await session.commit();
 		serverBroadcast(WebSocketEvent.onEmitHeartRate, UUID.transformIdentifierToRegular(pulse));
 		return response.json({
@@ -170,10 +187,10 @@ onApp.post('/register-session').handle(async (request, response) => {
 			});
 		}
 	}
-	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, session, collections } = await Database.getSessionPackage();
 	try {
 		await session.startTransaction();
-		const frontEndClient: IClientModel = await collections.clients
+		const frontEndClient: IClientModel = <IClientModel>await collections.clients
 			.findByID(UUID.regularToShort(request.body.clientId));
 		if (!frontEndClient) {
 			return response.status(404).json({
@@ -201,7 +218,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 				message: warnings[0].msg
 			});
 		}
-		frontEndSession = await collections.sessions.findByID(<string>frontEndSession._id);
+		frontEndSession = <ISessionModel>await collections.sessions.findByID(<string>frontEndSession._id);
 		await session.commit();
 		return response.json({
 			success: true,
@@ -209,6 +226,88 @@ onApp.post('/register-session').handle(async (request, response) => {
 			message: 'Front-End Client device successfully registered!',
 			data: UUID.transformIdentifierToRegular(frontEndSession)
 		});
+	} catch (e) {
+		await session.rollback();
+		const message = e.message || 'Internal server error.';
+		return response.status(500).json({
+			success: false,
+			code: 500,
+			message: message,
+			error: e
+		});
+	} finally {
+		await client.close();
+	}
+});
+
+/**
+ * Handle an API to be called by front-end device to upgrade the client app version
+ * by transforming client data to server data
+ */
+onApp.post('/client-upgrade').handle(async (request, response) => {
+	const requiredField = ['currentVersion', 'targetVersion', 'sessionId', 'data'];
+	for (const field of requiredField) {
+		if (!request.body[field]) {
+			return response.status(400).json({
+				success: false,
+				code: 400,
+				message: 'Parameter "' + field + '" is required!'
+			});
+		}
+	}
+	const { currentVersion, targetVersion, sessionId, data } = request.body;
+	const { client, session, collections } = await Database.getSessionPackage();
+	try {
+		let clientUpgraded = false;
+		await session.startTransaction();
+		if (targetVersion === '2.0.0') {
+			const localPulses: {
+				old_id: string,
+				arrived_at: number
+			}[] = data;
+			const findPulseResult = await collections.pulses
+				.find()
+				.execute();
+			const pulses: IPulseModel[] = <IPulseModel[]> findPulseResult.getDocuments();
+			for (const { old_id, arrived_at } of localPulses) {
+				const pulse = pulses.find(p => p.old_id === parseInt(old_id));
+				if (!!pulse) {
+					let pulseArrival: IPulseArrivalModel = {
+						_id: UUID.generate(),
+						session_id: sessionId,
+						pulse_id: pulse._id,
+						arrived_at: DateTime.formatDate(arrived_at),
+						created_at: DateTime.formatDate()
+					};
+					pulseArrival = UUID.transformIdentifierToShort(pulseArrival);
+					const addResult = await collections.pulse_arrivals
+						.add(pulseArrival)
+						.execute();
+					if (addResult.getWarningsCount() > 0) {
+						const warning = addResult.getWarnings()[0];
+						return response.json({
+							success: false,
+							code: 400,
+							message: warning.msg
+						})
+					}
+				}
+			}
+			clientUpgraded = true;
+		}
+		await session.commit();
+		return clientUpgraded 
+			? response.json({
+				success: true,
+				code: 200,
+				message: 'Client app upgrade request has been approved.',
+				data: { currentVersion, targetVersion, sessionId }
+			})
+			: response.json({
+				success: false,
+				code: 400,
+				message: 'Target version ' + targetVersion + ' is not available.'
+			});
 	} catch (e) {
 		await session.rollback();
 		const message = e.message || 'Internal server error.';
@@ -298,7 +397,7 @@ function onConnection(socket: WebSocket, sessionID: string) {
  * @param timestamp string The timestamp when the pulse arrived to the mentioned client.
  */
 async function onArrivalHeartRate(socket: WebSocket, sessionID: string, pulseID: string, timestamp: string) {
-	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, session, collections } = await Database.getSessionPackage();
 	try {
 		let pulseArrival: IPulseArrivalModel = {
 			_id: UUID.generate(),
@@ -337,7 +436,7 @@ async function onArrivalHeartRate(socket: WebSocket, sessionID: string, pulseID:
  * @param name string The device name.
  */
 async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
-	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, session, collections } = await Database.getSessionPackage();
 	try {
 		let device: IDeviceModel = {
 			_id: UUID.generate(),
@@ -394,14 +493,14 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
  * @param name string The device name.
  */
 async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: string, name: string) {
-	const { client, session, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, session, collections } = await Database.getSessionPackage();
 	try {
 		deviceID = UUID.regularToShort(deviceID);
 		await session.startTransaction();
 		const findPulseResult = await collections.pulses
 			.find({ device_id: deviceID })
 			.execute();
-		const pulses: IPulseModel[] = findPulseResult.getDocuments();
+		const pulses: IPulseModel[] = <IPulseModel[]>findPulseResult.getDocuments();
 		const deletePulseResult = await collections.pulses
 			.remove({ device_id: deviceID })
 			.execute();
@@ -457,7 +556,7 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
  * @param sessionID string Session identifier of the client.
  */
 async function onRequestDevices(socket: WebSocket, sessionID: string) {
-	const { client, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, collections } = await Database.getSessionPackage();
 	try {
 		const findDeviceResult = await collections.devices.find().execute();
 		let devices: IDeviceModel[] = [];
@@ -487,7 +586,7 @@ async function onRequestDevices(socket: WebSocket, sessionID: string) {
  * @param deviceID string The device identifier string.
  */
 async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceID: string) {
-	const { client, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, collections } = await Database.getSessionPackage();
 	try {
 		deviceID = UUID.regularToShort(deviceID);
 		const findPulseResult = await collections.pulses
@@ -497,7 +596,7 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
 			.find()
 			.execute();
 		let pulses: IPulseModel[] = [];
-		const pulseArrivals: IPulseArrivalModel[] = findPulseArrivalResult.getDocuments();
+		const pulseArrivals: IPulseArrivalModel[] = <IPulseArrivalModel[]>findPulseArrivalResult.getDocuments();
 		for (const pulse of findPulseResult.getDocuments()) {
 			const pulseArrival = pulseArrivals.find(_pulseArrival => {
 				return _pulseArrival.pulse_id === pulse._id &&
@@ -580,7 +679,7 @@ function onError(socket: WebSocket, sessionID: string | null, e: unknown) {
 }
 
 async function checkSession(socket: WebSocket, sessionID: string): Promise<boolean> {
-	const { client, collections } = await DatabaseHelper.prepareDatabase();
+	const { client, collections } = await Database.getSessionPackage();
 	let session;
 	try {
 		session = await collections.sessions.findByID(UUID.regularToShort(sessionID));

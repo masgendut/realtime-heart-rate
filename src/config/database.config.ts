@@ -14,16 +14,15 @@
  */
 
 import dotenv from 'dotenv';
-import ConnectionOptions from '../database/types/ConnectionOptions';
-import PoolingOptions from '../database/types/PoolingOptions';
+import ConnectionOptions from 'mysqlx/lib/types/ConnectionOptions';
+import PoolingOptions from 'mysqlx/lib/types/PoolingOptions';
 
 dotenv.config();
 
 class Config {
-
 	public static readonly connectionOptions: ConnectionOptions = {
 		host: process.env.DB_HOST || 'localhost',
-		port: process.env.DB_PORT|| 33060,
+		port: process.env.DB_PORT || 33060,
 		password: process.env.DB_PASSWORD,
 		user: process.env.DB_USERNAME || 'root',
 		schema: process.env.DB_NAME || 'heartrate',
@@ -32,10 +31,9 @@ class Config {
 	public static readonly poolingOptions: PoolingOptions = {
 		pooling: {
 			enabled: true,
-			maxSize: 3
-		}
+			maxSize: 3,
+		},
 	};
-
 }
 
 export default Config;

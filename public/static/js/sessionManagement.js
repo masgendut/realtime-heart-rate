@@ -18,17 +18,13 @@ let SESSION_IDENTIFIER = null;
 async function initialiseSession(forceInitialisation = false) {
 	let session = await getLocalSession();
 	if (session === null || forceInitialisation) {
-		const serverURI =
-			window.location.protocol +
-			'//' +
-			window.location.hostname +
-			':' +
-			window.location.port +
-			'/register-session';
+		const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/register-session';
 		const result = await $.ajax({
 			url: serverURI,
 			type: 'POST',
-			data: { clientId: CLIENT_IDENTIFIER }
+			dataType: 'json',
+			contentType: "application/json",
+			data: JSON.stringify({ clientId: CLIENT_IDENTIFIER }),
 		});
 		session = result.data;
 		await putLocalSession(session);
