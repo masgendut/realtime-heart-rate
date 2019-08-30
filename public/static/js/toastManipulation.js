@@ -17,7 +17,7 @@ const ToastType = {
 	Information: 'info',
 	Success: 'success',
 	Warning: 'warning',
-	Error: 'error'
+	Error: 'error',
 };
 
 if (toastr) {
@@ -26,17 +26,17 @@ if (toastr) {
 		debug: false,
 		newestOnTop: false,
 		progressBar: true,
-		positionClass: "toast-top-right",
+		positionClass: 'toast-top-right',
 		preventDuplicates: true,
 		onclick: null,
 		showDuration: 300,
 		hideDuration: 1000,
 		timeOut: 0,
 		extendedTimeOut: 0,
-		showEasing: "swing",
-		hideEasing: "linear",
-		maxOpened: 1
-	}
+		showEasing: 'swing',
+		hideEasing: 'linear',
+		maxOpened: 1,
+	};
 }
 
 function createToast(type, message, title) {

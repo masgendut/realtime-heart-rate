@@ -19,7 +19,7 @@ document.querySelector('form').onkeypress = function(e) {
 	return txtArea || (e.keyCode || e.which || e.charCode || 0) !== 13;
 };
 deviceSelectElement.addEventListener('change', function() {
-	selectedDeviceID = parseInt(deviceSelectElement.value);
+	selectedDeviceID = deviceSelectElement.value;
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
 	if (USE_CHART === true) {
@@ -27,17 +27,18 @@ deviceSelectElement.addEventListener('change', function() {
 	}
 	removeDeviceButtonElement.disabled = false;
 	removeDeviceButtonElement.innerHTML = 'Remove ' + getSelectedDevice().name;
-	setDataTableText(
-		'Getting heart rates data of ' + getSelectedDevice().name + '....'
-	);
-	const requestTime = (new Date()).getTime();
+	setDataTableText('Getting heart rates data of ' + getSelectedDevice().name + '....');
+	const requestTime = new Date().getTime();
 	let passedInterval = false;
 	const interval = setInterval(function() {
-		const intervalTime = (new Date()).getTime();
+		const intervalTime = new Date().getTime();
 		if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] === true) {
-			if ((intervalTime - requestTime) >= 5000 && !passedInterval) {
+			if (intervalTime - requestTime >= 5000 && !passedInterval) {
 				passedInterval = true;
-				const message = 'The process to retrieve heart rate data of "' + getSelectedDevice().name + '" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.';
+				const message =
+					'The process to retrieve heart rate data of "' +
+					getSelectedDevice().name +
+					'" is taking longer than usual. This may be caused by larger data or slow network speed. Please be patient.';
 				showAlert(AlertType.Warning, message, true);
 				createToast(ToastType.Warning, message, 'Still retrieving...');
 			}
@@ -52,7 +53,7 @@ deviceSelectElement.addEventListener('change', function() {
 	}, 1000);
 	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = true;
 	socket.send(WebSocketEvent.onRequestHeartRates, selectedDeviceID);
-})
+});
 addDeviceButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
 	addDeviceNameElement.value = '';
@@ -61,9 +62,9 @@ addDeviceButtonElement.addEventListener('click', function(event) {
 removeDeviceButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
 	const device = getSelectedDevice();
-	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device.id + ']';
+	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device._id + ']';
 	removeModalJQueryElement.modal('show');
-});;
+});
 if (changeChartButtonElement) {
 	changeChartButtonElement.addEventListener('click', function() {
 		if (USE_CHART === true) {
@@ -71,8 +72,9 @@ if (changeChartButtonElement) {
 		}
 	});
 }
+/*
 xlsxDownloadButtonElement.addEventListener('click', function (event) {
-	event.preventDefault();
+	/!*event.preventDefault();
 	downloadWorkbook(WorkBookFileFormat.xlsx);
 });
 xlsbDownloadButtonElement.addEventListener('click', function (event) {
@@ -99,3 +101,4 @@ htmlDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	downloadWorkbook(WorkBookFileFormat.html);
 });
+*/

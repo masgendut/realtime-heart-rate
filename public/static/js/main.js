@@ -14,22 +14,61 @@
  */
 
 function main() {
-	setInterval(function() {
-		const timeDiff = new Date().getTime() - lastPulseReceived.getTime();
-		if (timeDiff > 3000) {
-			heartRateElement.innerHTML = '0';
-			heartRateEmitTimeElement.innerHTML = '';
-			if (USE_CHART === true) {
-				pushChartData(0, 0);
-			}
-		}
-	}, 1000);
-	setDataTableText('Please select a device first.');
-	if (USE_CHART === true) {
-		initialiseChart();
+	if (typeof APP_VERSION === 'undefined' || !APP_VERSION) {
+		showAlert(
+			AlertType.Danger,
+			'<b>This application cannot be run because have no metadata information</b></br>This problem arise because of incorrect application build process. Contact the developer or technical support to fix this problem.',
+			true
+		);
+		return;
 	}
-	createToast(ToastType.Warning, 'Establishing connection to Real-Time server via WebSocket...');
-	startWebSocket();
+	if (typeof CLIENT_IDENTIFIER === 'undefined' || !CLIENT_IDENTIFIER) {
+		showAlert(
+			AlertType.Danger,
+			'<b>This application cannot be run because have no Client Identifier to connect to the server</b></br>This problem arise because of incorrect application build process. Contact the developer or technical support to fix this problem.',
+			true
+		);
+		return;
+	}
+	isRequireUpgrade()
+		.then((needsUpgrade) => {
+			if (needsUpgrade) {
+				askToUpgrade();
+			}
+			return !needsUpgrade;
+		})
+		.then((shouldInitialiseApp) => {
+			if (shouldInitialiseApp) {
+				if (hasGarbageMemory()) {
+					askToCleanUp();
+				}
+				initialiseApp();
+			}
+		})
+		.catch((error) => {
+			createToast(ToastType.Error, error, 'Application Error');
+		});
+}
+
+function initialiseApp() {
+	initialiseSession().then(() => {
+		setInterval(function() {
+			const timeDiff = new Date().getTime() - lastPulseReceived;
+			if (timeDiff > 5000) {
+				heartRateElement.innerHTML = '0';
+				heartRateEmitTimeElement.innerHTML = '';
+				if (USE_CHART === true) {
+					pushChartData(0, 0);
+				}
+			}
+		}, 1000);
+		setDataTableText('Please select a device first.');
+		if (USE_CHART === true) {
+			initialiseChart();
+		}
+		createToast(ToastType.Warning, 'Establishing connection to Real-Time server via WebSocket...');
+		startWebSocket();
+	});
 }
 
 (function() {
@@ -38,9 +77,11 @@ function main() {
 		main();
 	} catch (error) {
 		if (error instanceof SyntaxError) {
-			showAlert(AlertType.Danger,
+			showAlert(
+				AlertType.Danger,
 				'Your browser does not support this website. Please update to more modern browser for this website to run.',
-				true);
+				true
+			);
 		} else {
 			showAlert(AlertType.Danger, error.message, true);
 			console.error(error);

@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-
 import SwaggerUI from 'swagger-ui-express';
 import SwaggerDocument from './openapi.json';
-import { Application } from "express-serve-static-core";
-import { requireHTTPS } from "../helpers/express";
+import { Application } from 'express-serve-static-core';
+import { requireHTTPS } from '../helpers/express';
 
 export function docs(app: Application, route: string = '/docs') {
-    app.use(route, requireHTTPS, SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
+	app.use(route, requireHTTPS, SwaggerUI.serve, SwaggerUI.setup(SwaggerDocument));
 }
 
 export default docs;

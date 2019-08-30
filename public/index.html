@@ -51,7 +51,7 @@ limitations under the License.
         <div class="row">
             <div class="col-lg-4">
                 <select disabled class="custom-select device-select" style="margin-bottom: 20px;">
-                    <option selected disabled>Getting device data...</option>
+                    <option selected disabled>Device List</option>
                 </select>
                 <div>
                     <button id="remove-device-button" disabled type="button" class="btn btn-danger btn-sm">Remove Device</button>
@@ -85,6 +85,7 @@ limitations under the License.
                     </thead>
                 </table>
                 <br />
+                <!--
                 <div class="float-right"    >
                     <div class="btn-group dropleft">
                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="download-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -103,6 +104,7 @@ limitations under the License.
                 </div>
                 <br />
                 <br />
+                -->
                 <div class="alert alert-info" role="alert" role="alert">
                     <strong>HR: Heart Rate</strong><br/>
                     The heart rate value.
@@ -131,6 +133,8 @@ limitations under the License.
                 <div class="col-12 col-md">
                     <img class="mb-2" src="/static/img/icon.png" alt="" width="24" height="24">
                     <small class="d-block mb-3 text-muted copyright">
+                        <span id='app-info'></span>
+                        <br/>
                         Copyright &copy;
                         <script lang="js">document.write((new Date()).getFullYear());</script>
                         Mokhamad Mustaqim. All right reserved.<br/>
@@ -197,11 +201,10 @@ limitations under the License.
     <script type="text/javascript" src="static/js/3rd-party/datatables.bootstrap.min.js" ></script>
     <script type="text/javascript" src="static/js/3rd-party/Chart.min.js"></script>
     <script type="text/javascript" src="static/js/3rd-party/moment.min.js"></script>
+    <script type="text/javascript" src="static/js/3rd-party/moment-timezone-with-data.min.js"></script>
     <script type="text/javascript" src="static/js/3rd-party/localforage.min.js"></script>
     <script type="text/javascript" src="static/js/3rd-party/toastr.min.js"></script>
     <script type="text/javascript" src="static/js/3rd-party/FileSaver.min.js"></script>
-    <script type="text/javascript" src="static/js/3rd-party/shim.min.js"></script>
-    <script type="text/javascript" src="static/js/3rd-party/xlsx.min.js"></script>
     <script type="text/javascript" src="static/js/application.min.js"></script>
 
 </body>

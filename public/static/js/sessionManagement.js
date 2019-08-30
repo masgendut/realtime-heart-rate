@@ -13,27 +13,21 @@
  * limitations under the License.
  */
 
-let datatable = null;
+let SESSION_IDENTIFIER = null;
 
-function addDataTableRows(rows) {
-	if (!Array.isArray(rows)) {
-		console.log('Rows on Data Table "addDataTableRows" is not an array. Parsing failed!');
-		return;
+async function initialiseSession(forceInitialisation = false) {
+	let session = await getLocalSession();
+	if (session === null || forceInitialisation) {
+		const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/register-session';
+		const result = await $.ajax({
+			url: serverURI,
+			type: 'POST',
+			dataType: 'json',
+			contentType: 'application/json',
+			data: JSON.stringify({ clientId: CLIENT_IDENTIFIER }),
+		});
+		session = result.data;
+		await putLocalSession(session);
 	}
-	datatable.clear();
-	datatable.rows.add(rows);
-	datatable.draw();
-}
-
-function setDataTableText(text) {
-	if (datatable) {
-		datatable.destroy();
-	}
-	datatable = tableJQueryElement.DataTable({
-		data: [],
-		language: {
-			emptyTable: text,
-		},
-		ordering: false,
-	});
+	SESSION_IDENTIFIER = session._id;
 }

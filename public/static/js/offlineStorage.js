@@ -13,9 +13,11 @@
  * limitations under the License.
  */
 
-const storage = !!localforage ? localforage.createInstance({
-	name: "realtime-heart-rate"
-}) : null;
+const storage = !!localforage
+	? localforage.createInstance({
+			name: 'realtime-heart-rate',
+	  })
+	: null;
 
 async function getLocalKeys() {
 	try {
@@ -59,57 +61,22 @@ async function deleteLocal(key) {
 }
 
 /**
- * Helper Functions for Offline Storage
+ * Helper Functions for Local Session
  */
 
-async function putLocalPulse(pulse, receivedAt, transportDelay) {
-	const key = 'pulse-' + pulse.id;
-	const value = {
-		pulse, receivedAt, transportDelay
-	};
-	await putLocal(key, value);
-	return pulse;
+async function putLocalSession(session) {
+	await putLocal('session', session);
+	return session;
 }
 
-async function getLocalPulse(pulse) {
-	const key = 'pulse-' + pulse.id;
-	const value = await getLocal(key);
-	if (value === null) {
+async function getLocalSession() {
+	const session = await getLocal('session');
+	if (session === null) {
 		return null;
 	}
-	if (pulse.id === value.pulse.id &&
-		pulse.device_id === value.pulse.device_id &&
-		pulse.pulse === value.pulse.pulse &&
-		pulse.emitted_at.getTime() === value.pulse.emitted_at.getTime() &&
-		pulse.created_at.getTime() === value.pulse.created_at.getTime()
-	) {
-		return value;
-	} else {
-		await deleteLocal(key);
+	if (!session._id) {
+		await deleteLocal('session');
 		return null;
 	}
-}
-
-async function checkLocalPulseByDeviceIDs(deviceIDs) {
-	const keys = await getLocalKeys();
-	for (const key of keys) {
-		const value = await getLocal(key);
-		if (value !== null && value.pulse !== void 0) {
-			const { pulse } = value;
-			const shouldBeCleaned = deviceIDs.findIndex(deviceID => deviceID === pulse.device_id) === -1;
-			if (shouldBeCleaned) {
-				await deleteLocal(key);
-			}
-		}
-	}
-}
-
-async function getReceivedTimeFromLocalPulse(pulse) {
-	const value = await getLocalPulse(pulse);
-	return value !== null ? value.receivedAt : null;
-}
-
-async function getTransportDelayFromLocalPulse(pulse) {
-	const value = await getLocalPulse(pulse);
-	return value !== null ? value.transportDelay : null;
+	return session;
 }

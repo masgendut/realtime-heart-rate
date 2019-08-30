@@ -20,34 +20,31 @@ const WorkBookFileFormat = {
 	csv: '.csv',
 	ods: '.ods',
 	fods: '.fods',
-	html: '.html'
+	html: '.html',
 };
 
-const workbookFileName = 'heart-rates-'.concat((new Date()).getTime().toString());
+const workbookFileName = 'heart-rates-'.concat(new Date().getTime().toString());
 
 function createObject(pulse, emittedAt, receivedAt, transportDelay) {
 	function parseTransportDelay() {
 		const delay = parseFloat(transportDelay);
 		return isNaN(delay) ? 0 : delay;
 	}
-	return { pulse, emittedAt,
+	return {
+		pulse,
+		emittedAt,
 		receivedAt: receivedAt === null ? 'N/A' : receivedAt,
-		transportDelay: transportDelay === null ? 0 : parseTransportDelay()
+		transportDelay: transportDelay === null ? 0 : parseTransportDelay(),
 	};
 }
 
 function getRowObjects() {
 	const objects = [];
-	objects.push(createObject(
-		'Heart Rate',
-		'Emitted At',
-		'Received At',
-		'Transport Delay'
-	));
+	objects.push(createObject('Heart Rate', 'Emitted At', 'Received At', 'Transport Delay'));
 	let totalTransport = 0;
 	const rows = savedRawPulses;
 	for (const row of rows) {
-		totalTransport += row[3]
+		totalTransport += row[3];
 		objects.push(createObject(row[0], row[1], row[2], row[3]));
 	}
 	objects.push(createObject('Total Transport', '', '', totalTransport));
@@ -57,14 +54,9 @@ function getRowObjects() {
 
 function createWorkSheet() {
 	return XLSX.utils.json_to_sheet(getRowObjects(), {
-		header: [
-			'pulse',
-			'emittedAt',
-			'receivedAt',
-			'transportDelay'
-		],
+		header: ['pulse', 'emittedAt', 'receivedAt', 'transportDelay'],
 		skipHeader: true,
-		cellDates: true
+		cellDates: true,
 	});
 }
 
@@ -102,13 +94,28 @@ function downloadWorkbook(format) {
 	}
 	format = format.toLowerCase();
 	switch (format) {
-		case WorkBookFileFormat.xlsx: processWorkbook(format); break;
-		case WorkBookFileFormat.xlsb: processWorkbook(format); break;
-		case WorkBookFileFormat.xls: processWorkbook(format); break;
-		case WorkBookFileFormat.csv: processWorkbook(format); break;
-		case WorkBookFileFormat.ods: processWorkbook(format); break;
-		case WorkBookFileFormat.fods: processWorkbook(format); break;
-		case WorkBookFileFormat.html: processWorkbook(format); break;
-		default: onDownloadError('Workbook format "' + format +'" is unknown.');
+		case WorkBookFileFormat.xlsx:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.xlsb:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.xls:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.csv:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.ods:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.fods:
+			processWorkbook(format);
+			break;
+		case WorkBookFileFormat.html:
+			processWorkbook(format);
+			break;
+		default:
+			onDownloadError('Workbook format "' + format + '" is unknown.');
 	}
 }

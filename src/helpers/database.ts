@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Mokhamad Mustaqim & Danang Galuh Tegar Prasetyo.
+ * Copyright 2019, Danang Galuh Tegar Prasetyo & Mokhamad Mustaqim.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,28 +13,54 @@
  * limitations under the License.
  */
 
-import dotenv from 'dotenv';
-import mysql from 'promise-mysql';
+import DatabaseConfig from '../config/database.config';
+import mysqlx, { Client, Collection, Schema, Session, Table } from 'mysqlx';
 
-dotenv.config();
+class Database {
+	private readonly collectionNameList: string[];
 
-const mysqlConnectionConfig: mysql.ConnectionConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USERNAME || 'root',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'heartrate',
-    timezone: 'UTC',
-    dateStrings: ['DATE', 'DATETIME']
-};
+	constructor() {
+		this.collectionNameList = ['applications', 'clients', 'devices', 'pulses', 'pulse_arrivals', 'sessions'];
+	}
 
-export async function getDatabase() {
-    try {
-        const connection = await mysql.createConnection(mysqlConnectionConfig);
-        await connection.query("SET time_zone='+00:00';");
-        return connection;
-    } catch (error) {
-        throw error;
-    }
+	public async getSessionPackage(): Promise<DatabaseSessionPackage> {
+		try {
+			const client = mysqlx.getClient(DatabaseConfig.connectionOptions, DatabaseConfig.poolingOptions);
+			const schemaName: string = (DatabaseConfig.connectionOptions as any).schema;
+			const session: Session = await client.getSession();
+			let schema: Schema = session.getSchema(schemaName);
+			if (!(await schema.existsInDatabase())) {
+				schema = await session.createSchema(schemaName);
+			}
+			const collections: { [key: string]: Collection } = {};
+			for (const collectionName of this.collectionNameList) {
+				let collection: Collection = await schema.getCollection(collectionName);
+				if (!(await collection.existsInDatabase())) {
+					collection = await schema.createCollection(collectionName);
+				}
+				collections[collectionName] = collection;
+			}
+			return {
+				client,
+				session,
+				schema,
+				collections: <Record<CollectionName, Collection>>collections,
+			};
+		} catch (error) {
+			throw error;
+		}
+	}
 }
 
-export default { getDatabase }
+type CollectionName = 'clients' | 'devices' | 'pulses' | 'pulse_arrivals' | 'sessions';
+type TableName = 'old_devices' | 'old_pulses';
+
+type DatabaseSessionPackage = {
+	client: Client;
+	session: Session;
+	schema: Schema;
+	collections: Record<CollectionName, Collection>;
+};
+
+const database = new Database();
+export default database;

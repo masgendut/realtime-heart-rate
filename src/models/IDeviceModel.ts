@@ -1,8 +1,8 @@
 export interface IDeviceModel {
-    id?: number;
-    name: string;
-    created_at?: string | Date;
-    updated_at?: string | Date;
+	_id: string;
+	old_id?: number;
+	name: string;
+	created_at: Date | number;
 }
 
 export default IDeviceModel;

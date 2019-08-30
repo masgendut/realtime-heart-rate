@@ -21,7 +21,7 @@ const AlertType = {
 	Warning: 'warning',
 	Info: 'info',
 	Light: 'light',
-	Dark: 'dark'
+	Dark: 'dark',
 };
 
 function showAlert(type, message, isReplace) {
