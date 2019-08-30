@@ -1,9 +1,10 @@
 # Real-Time Heart Rate
 
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate?ref=badge_shield)
+
 Real-Time heart rates monitoring using pulse sensor
 
 [![hosting terbaik](https://goo.gl/CJlcyZ)](https://www.domainesia.com/?aff=4049)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate?ref=badge_shield)
 
 ## Getting started
 
@@ -66,11 +67,10 @@ This project is using [SemVer](http://semver.org/) for versioning. For the versi
 -   **Danang Galuh Tegar Prasetyo** - _Initial work_ - [danang-id](https://github.com/danang-id)
 -   **Mokhamad Mustaqim** - [masgendut](https://github.com/masgendut)
 
-See also the list of [contributors](https://github.com/masgendutd/realtime-heart-rate/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/masgendut/realtime-heart-rate/contributors) who participated in this project.
 
 ## License
 
 This project is licensed under the Apache License version 2.0 (Apache-2.0). See [LICENSE](LICENSE) for details.
-
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmasgendut%2Frealtime-heart-rate?ref=badge_large)
