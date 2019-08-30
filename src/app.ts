@@ -104,7 +104,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 	}
 	const { client, session, collections } = await Database.getSessionPackage();
 	try {
-		if (isNumber(request.query.deviceId) || isNumber(parseInt(request.query.deviceId))) {
+		if (request.query.deviceId.length !== 36 && isNumber(parseInt(request.query.deviceId))) {
 			// This means it is old device ID.
 			const result = await collections.devices
 				.find()
@@ -112,7 +112,9 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 			const devices: IDeviceModel[] = <IDeviceModel[]> result.getDocuments();
 			const device = devices.find(d => d.old_id === parseInt(request.query.deviceId));
 			if (!!device) {
-				request.query.deviceId = (<IDeviceModel> result.getDocuments()[0])._id
+				request.query.deviceId = UUID.shortToRegular(
+					(<IDeviceModel> result.getDocuments()[0])._id
+				);
 			} else {
 				return response.status(404).json({
 					success: false,
