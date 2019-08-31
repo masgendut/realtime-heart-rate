@@ -20,7 +20,7 @@ const ToastType = {
 	Error: 'error',
 };
 
-if (toastr) {
+if (typeof toastr !== 'undefined' && toastr) {
 	toastr.options = {
 		closeButton: true,
 		debug: false,
@@ -40,7 +40,7 @@ if (toastr) {
 }
 
 function createToast(type, message, title) {
-	if (toastr) {
+	if (typeof toastr !== 'undefined' && toastr) {
 		toastr.remove();
 		toastr[type](message, title);
 	}

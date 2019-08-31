@@ -24,6 +24,8 @@ const WebSocketEvent = {
 	onRetrieveDevices: 'DEVICES_RETRIEVE',
 	onRequestHeartRates: 'HEART_RATES_REQUEST',
 	onRetrieveHeartRates: 'HEART_RATES_RETRIEVE',
+	onRequestFile: 'FILE_REQUEST',
+	onRetrieveFile: 'FILE_RETRIEVE',
 	onError: 'ERROR',
 	onInvalidSession: 'SESSION_INVALID',
 };
@@ -150,7 +152,13 @@ async function onRetrieveHeartRates(pulses) {
 	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 }
 
-function onResponseEvent(event, data) {
+function onRetrieveFile(fileName, dataURI) {
+	hiddenDownloadLinkElement.setAttribute('download', fileName);
+	hiddenDownloadLinkElement.setAttribute('href', dataURI);
+	hiddenDownloadLinkElement.click();
+}
+
+async function onResponseEvent(event, data) {
 	switch (event) {
 		case WebSocketEvent.onConnection:
 			onConnection(data);
@@ -159,13 +167,16 @@ function onResponseEvent(event, data) {
 			onAfterAddRemoveDevice(data.success, data.message);
 			break;
 		case WebSocketEvent.onEmitHeartRate:
-			onEmitHeartRate(data).then(() => {});
+			await onEmitHeartRate(data);
 			break;
 		case WebSocketEvent.onRetrieveDevices:
 			onRetrieveDevices(data);
 			break;
 		case WebSocketEvent.onRetrieveHeartRates:
-			onRetrieveHeartRates(data).then(() => {});
+			await onRetrieveHeartRates(data);
+			break;
+		case WebSocketEvent.onRetrieveFile:
+			await onRetrieveFile(data.fileName, data.dataURI);
 			break;
 		case WebSocketEvent.onError:
 			onError(data);
@@ -192,9 +203,9 @@ function onInvalidSession() {
 function startWebSocket() {
 	const serverURI = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + ':' + window.location.port + '/';
 	socket = new WebSocket(serverURI);
-	const _internalSend = socket.send;
+	const _send = socket.send;
 	socket.send = (event, data) => {
-		_internalSend.call(
+		_send.call(
 			socket,
 			JSON.stringify({
 				sessionID: SESSION_IDENTIFIER,
@@ -203,11 +214,11 @@ function startWebSocket() {
 			})
 		);
 	};
+	const ping = () => {
+		createToast(ToastType.Warning, 'Real-Time connection to server opened. Waiting for a response...');
+		socket.send(WebSocketEvent.onConnection);
+	}
 	socket.onopen = function() {
-		function ping() {
-			createToast(ToastType.Warning, 'Real-Time connection to server opened. Waiting for a response...');
-			socket.send(WebSocketEvent.onConnection);
-		}
 		if (socketStates.reconnect !== true) {
 			ping();
 		} else {
@@ -223,7 +234,7 @@ function startWebSocket() {
 	socket.onclose = function() {
 		addDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.disabled = true;
-		console.log('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
+		console.warn('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
 		createToast(ToastType.Warning, 'Disconnected from Real-Time server! Retrying to connect...');
 		socketStates.reconnect = true;
 		setTimeout(function() {

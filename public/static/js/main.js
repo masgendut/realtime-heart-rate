@@ -54,14 +54,14 @@ function initialiseApp() {
 	initialiseSession().then(() => {
 		setInterval(function() {
 			const timeDiff = new Date().getTime() - lastPulseReceived;
-			if (timeDiff > 5000) {
+			if (timeDiff > 3000) {
 				heartRateElement.innerHTML = '0';
 				heartRateEmitTimeElement.innerHTML = '';
 				if (USE_CHART === true) {
 					pushChartData(0, 0);
 				}
 			}
-		}, 1000);
+		}, 100);
 		setDataTableText('Please select a device first.');
 		if (USE_CHART === true) {
 			initialiseChart();

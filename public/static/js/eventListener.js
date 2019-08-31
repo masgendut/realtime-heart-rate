@@ -72,33 +72,19 @@ if (changeChartButtonElement) {
 		}
 	});
 }
-/*
 xlsxDownloadButtonElement.addEventListener('click', function (event) {
-	/!*event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.xlsx);
-});
-xlsbDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.xlsb);
+	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-xlsx');
 });
 xlsDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.xls);
+	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-xls');
 });
 csvDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.csv);
+	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-csv');
 });
 odsDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.ods);
+	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-ods');
 });
-fodsDownloadButtonElement.addEventListener('click', function (event) {
-	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.fods);
-});
-htmlDownloadButtonElement.addEventListener('click', function (event) {
-	event.preventDefault();
-	downloadWorkbook(WorkBookFileFormat.html);
-});
-*/

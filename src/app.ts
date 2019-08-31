@@ -625,6 +625,30 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
 }
 
 /**
+ * onRequestFile()
+ * This function will be fired when a client send an 'onRequestFile' event
+ * to WebSocket server.
+ *
+ * @param socket WebSocket WebSocket client where the response should sent to.
+ * @param sessionID string Session identifier of the client.
+ * @param requestedFileID string The requested file identifier.
+ */
+async function onRequestFile(socket: WebSocket, sessionID: string, requestedFileID: string) {
+	// const { client, collections } = await Database.getSessionPackage();
+	// try {
+	// 	const fileFormat = '.xlsx';
+	// 	const fileName = 'heart-rates-'.concat(new Date().getTime().toString()).concat(fileFormat);
+	// 	const dataURI = 'data:application/octet-stream,base64';
+	// 	serverSend(socket, sessionID, WebSocketEvent.onRetrieveHeartRates, { fileName, dataURI });
+	// } catch (error) {
+	// 	onError(socket, sessionID, error);
+	// } finally {
+	// 	await client.close();
+	// }
+	onError(socket, sessionID, new Error('Download feature is not avaiable right now. Please check again later.'));
+}
+
+/**
  * onRequestEvent()
  * This function will be fired when a client send an request event to WebSocket
  * server.
@@ -662,6 +686,10 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
 		case WebSocketEvent.onRequestHeartRates:
 			const deviceID_ = <string>data;
 			await onRequestHeartRates(socket, sessionID, deviceID_);
+			break;
+		case WebSocketEvent.onRequestFile:
+			const requestedFileID = <string>data;
+			await onRequestFile(socket, sessionID, requestedFileID);
 			break;
 	}
 }
@@ -740,6 +768,8 @@ enum WebSocketEvent {
 	onRetrieveDevices = 'DEVICES_RETRIEVE',
 	onRequestHeartRates = 'HEART_RATES_REQUEST',
 	onRetrieveHeartRates = 'HEART_RATES_RETRIEVE',
+	onRequestFile = 'FILE_REQUEST',
+	onRetrieveFile = 'FILE_RETRIEVE',
 	onError = 'ERROR',
 	onInvalidEvent = 'EVENT_INVALID',
 	onInvalidSession = 'SESSION_INVALID'
