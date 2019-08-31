@@ -24,7 +24,14 @@ import IClientModel from '../src/models/IClientModel';
 dotenv.config();
 
 const clientNameList = ['Web Front-End', 'Emitter/Tester'];
-const webClientIdentifierFileLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js', 'clientIdentifier.js');
+const webClientIdentifierFileLocation: fs.PathLike = path.join(
+	__dirname,
+	'..',
+	'public',
+	'static',
+	'js',
+	'clientIdentifier.js'
+);
 const webAppVersionFileLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js', 'appVersion.js');
 const clientsFileLocation: fs.PathLike = path.join(__dirname, '..', 'clients.json');
 
@@ -61,7 +68,9 @@ export async function migrateUp() {
 		const webAppVersionFileContent: string = `const APP_VERSION = '${appVersion}';${versionListContent}`;
 		fs.writeFileSync(webClientIdentifierFileLocation, webClientIdentifierFileContent, { encoding: 'utf-8' });
 		fs.writeFileSync(webAppVersionFileLocation, webAppVersionFileContent, { encoding: 'utf-8' });
-		fs.writeFileSync(clientsFileLocation, JSON.stringify({ clients: frontEndClients }, null, 4), { encoding: 'utf-8' });
+		fs.writeFileSync(clientsFileLocation, JSON.stringify({ clients: frontEndClients }, null, 4), {
+			encoding: 'utf-8',
+		});
 		await session.commit();
 		console.log('Successfully migrate application data.');
 	} catch (error) {

@@ -95,7 +95,12 @@ async function onEmitHeartRate(pulse) {
 			pushChartData(pulse.pulse, transportDelay);
 		}
 		const rawRow = [pulse.pulse, pulse.emitted_at, lastPulseReceived, transportDelay];
-		const row = [rawRow[0], formatDate(rawRow[1]), formatDate(rawRow[2]), rawRow[3].toLocaleString('id-ID').concat(' s')];
+		const row = [
+			rawRow[0],
+			formatDate(rawRow[1]),
+			formatDate(rawRow[2]),
+			rawRow[3].toLocaleString('id-ID').concat(' s'),
+		];
 		savedRawPulses.reverse();
 		savedRawPulses.push(rawRow);
 		savedPulses.reverse();
@@ -113,7 +118,16 @@ function onRetrieveDevices(devices) {
 	savedDevices = devices;
 	let deviceSelectHTML = '';
 	for (const device of devices) {
-		deviceSelectHTML = deviceSelectHTML + '<option value="' + device._id + '">' + device.name + ' [ID: ' + device._id + ']' + '</option>';
+		deviceSelectHTML =
+			deviceSelectHTML +
+			'<option value="' +
+			device._id +
+			'">' +
+			device.name +
+			' [ID: ' +
+			device._id +
+			']' +
+			'</option>';
 	}
 	const firstOption = savedDevices.length > 0 ? 'Select a device...' : 'No device available.';
 	deviceSelectElement.innerHTML = '<option selected disabled>' + firstOption + '</option>' + deviceSelectHTML;
@@ -122,7 +136,13 @@ function onRetrieveDevices(devices) {
 
 async function onRetrieveHeartRates(pulses) {
 	if (pulses.length === 0) {
-		setDataTableText('There are no any heart rates data for ' + getSelectedDevice().name + ' [ID: ' + getSelectedDevice()._id + '].');
+		setDataTableText(
+			'There are no any heart rates data for ' +
+				getSelectedDevice().name +
+				' [ID: ' +
+				getSelectedDevice()._id +
+				'].'
+		);
 		savedPulses = [];
 		areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = false;
 		return;
@@ -201,7 +221,13 @@ function onInvalidSession() {
 }
 
 function startWebSocket() {
-	const serverURI = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + ':' + window.location.port + '/';
+	const serverURI =
+		(window.location.protocol === 'https:' ? 'wss:' : 'ws:') +
+		'//' +
+		window.location.hostname +
+		':' +
+		window.location.port +
+		'/';
 	socket = new WebSocket(serverURI);
 	const _send = socket.send;
 	socket.send = (event, data) => {
@@ -217,7 +243,7 @@ function startWebSocket() {
 	const ping = () => {
 		createToast(ToastType.Warning, 'Real-Time connection to server opened. Waiting for a response...');
 		socket.send(WebSocketEvent.onConnection);
-	}
+	};
 	socket.onopen = function() {
 		if (socketStates.reconnect !== true) {
 			ping();

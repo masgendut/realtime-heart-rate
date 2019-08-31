@@ -70,7 +70,8 @@ function updateChart() {
 
 function switchChart() {
 	activeChart = activeChart === 0 ? 1 : 0;
-	changeChartButtonElement.innerHTML = activeChart === 0 ? 'Switch to Transport Delay Chart' : 'Switch to Heart Rate Chart';
+	changeChartButtonElement.innerHTML =
+		activeChart === 0 ? 'Switch to Transport Delay Chart' : 'Switch to Heart Rate Chart';
 	if (activeChart === 0) {
 		changeChartButtonElement.classList.add('btn-danger');
 		changeChartButtonElement.classList.remove('btn-info');

@@ -30,6 +30,7 @@ export async function minify() {
 		'tableManipulation.js',
 		'chartManipulation.js',
 		'offlineStorage.js',
+		'fileManagement.js',
 		'sessionManagement.js',
 		'versionManagement.js',
 		'webSocket.js',

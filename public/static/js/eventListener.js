@@ -72,19 +72,19 @@ if (changeChartButtonElement) {
 		}
 	});
 }
-xlsxDownloadButtonElement.addEventListener('click', function (event) {
+xlsxDownloadButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
-	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-xlsx');
+	requestFile(AvailableFileFormat.XLSX);
 });
-xlsDownloadButtonElement.addEventListener('click', function (event) {
+xlsDownloadButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
-	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-xls');
+	requestFile(AvailableFileFormat.XLS);
 });
-csvDownloadButtonElement.addEventListener('click', function (event) {
+csvDownloadButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
-	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-csv');
+	requestFile(AvailableFileFormat.CSV);
 });
-odsDownloadButtonElement.addEventListener('click', function (event) {
+odsDownloadButtonElement.addEventListener('click', function(event) {
 	event.preventDefault();
-	socket.send(WebSocketEvent.onRequestFile, 'heart-rate-ods');
+	requestFile(AvailableFileFormat.ODS);
 });

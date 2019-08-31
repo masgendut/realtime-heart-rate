@@ -147,7 +147,8 @@ async function upgradeToVersion2() {
 			allIndex++;
 		}
 		await initialiseSession();
-		const serverURI = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/client-upgrade';
+		const serverURI =
+			window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/client-upgrade';
 		const response = {
 			success: true,
 			message: '',
@@ -200,7 +201,11 @@ async function doCleanUp() {
 			await deleteLocal(localPulseKey);
 		}
 		console.log('INFO: Successfully cleaned up old data.');
-		showAlert(AlertType.Success, '<b>Old data has been cleaned up</b></br>' + 'You may continue using this application as usual.', true);
+		showAlert(
+			AlertType.Success,
+			'<b>Old data has been cleaned up</b></br>' + 'You may continue using this application as usual.',
+			true
+		);
 	} catch (error) {
 		showAlert(AlertType.Danger, '<b>Failed to clean up old data</b></br>' + error.message, true);
 		console.log('ERROR: ' + error.message);

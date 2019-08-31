@@ -27,7 +27,7 @@
 		"@types/express": "^4.17.1",
 		"@types/express-serve-static-core": "^4.16.9",
 		"@types/lodash.isnumber": "^3.0.6",
-		"@types/node": "^12.7.2",
+		"@types/node": "^12.7.3",
 		"@types/swagger-ui-express": "^3.0.1",
 		"@types/uglify-es": "^3.0.0",
 		"@types/useragent": "^2.1.1",
@@ -44,7 +44,7 @@
 		"migrate": "npm run scripts migrateUp",
 		"unmigrate": "npm run scripts migrateDown",
 		"minify": "npm run scripts minify",
-		"prettify": "prettier ./src/**/*.ts ./scripts/*.ts ./public/static/js/*.js --write",
+		"format": "prettier ./src/**/*.ts ./scripts/*.ts ./public/static/js/*.js --write --config ./.prettierrc",
 		"start": "npm run minify silent && ts-node src/app.ts",
 		"dev": "nodemon",
 		"build": "tsc && npm run minify silent"

@@ -32,7 +32,9 @@ let CURRENT_VERSION = VERSION_LIST[0];
 
 export async function upgradeVersion() {
 	if (VERSION_LIST[VERSION_LIST.length - 1] !== EXPECTED_VERSION) {
-		console.log('Cannot upgrade. Expected application version ' + EXPECTED_VERSION + ' is not available in Version List');
+		console.log(
+			'Cannot upgrade. Expected application version ' + EXPECTED_VERSION + ' is not available in Version List'
+		);
 		return;
 	}
 	const client: Client = mysqlx.getClient(DatabaseConfig.connectionOptions, DatabaseConfig.poolingOptions);

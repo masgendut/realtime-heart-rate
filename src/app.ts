@@ -632,11 +632,12 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
  * @param socket WebSocket WebSocket client where the response should sent to.
  * @param sessionID string Session identifier of the client.
  * @param requestedFileID string The requested file identifier.
+ * @param fileFormat string The requested file format.
+ * @param data Object Additional data to specify file request.
  */
-async function onRequestFile(socket: WebSocket, sessionID: string, requestedFileID: string) {
+async function onRequestFile(socket: WebSocket, sessionID: string, requestedFileID: string, fileFormat: string, data: { [k: string]: any }) {
 	// const { client, collections } = await Database.getSessionPackage();
 	// try {
-	// 	const fileFormat = '.xlsx';
 	// 	const fileName = 'heart-rates-'.concat(new Date().getTime().toString()).concat(fileFormat);
 	// 	const dataURI = 'data:application/octet-stream,base64';
 	// 	serverSend(socket, sessionID, WebSocketEvent.onRetrieveHeartRates, { fileName, dataURI });
@@ -688,8 +689,13 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
 			await onRequestHeartRates(socket, sessionID, deviceID_);
 			break;
 		case WebSocketEvent.onRequestFile:
-			const requestedFileID = <string>data;
-			await onRequestFile(socket, sessionID, requestedFileID);
+			type onRequestFileType = {
+				requestedFileID: string, 
+				fileFormat: string,
+				data: { [k: string]: any }
+			};
+			const { fileFormat, requestedFileID } = <onRequestFileType>data;
+			await onRequestFile(socket, sessionID, requestedFileID, fileFormat, (<onRequestFileType>data).data );
 			break;
 	}
 }

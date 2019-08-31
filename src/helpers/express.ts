@@ -34,7 +34,14 @@ export function favicon(filename: string, pattern: RegExp = /\/favicon\.(png|ico
 	};
 }
 
-function addRoute(app: Application, method: HTTP_METHOD, route: string, isRequireHTTPS: boolean, isAsyncHandler: boolean, handler: RequestHandler) {
+function addRoute(
+	app: Application,
+	method: HTTP_METHOD,
+	route: string,
+	isRequireHTTPS: boolean,
+	isAsyncHandler: boolean,
+	handler: RequestHandler
+) {
 	const _handler = isAsyncHandler ? handleAsync(handler) : handler;
 	isRequireHTTPS ? app[method](route, requireHTTPS, _handler) : app[method](route, _handler);
 }
