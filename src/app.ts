@@ -646,7 +646,7 @@ async function onRequestFile(socket: WebSocket, sessionID: string, requestedFile
 	// } finally {
 	// 	await client.close();
 	// }
-	onError(socket, sessionID, new Error('Download feature is not avaiable right now. Please check again later.'));
+	onError(socket, sessionID, new Error('Download feature is not available right now. Please check again later.'));
 }
 
 /**
