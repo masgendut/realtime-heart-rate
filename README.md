@@ -4,7 +4,7 @@
 
 Real-Time heart rates monitoring using pulse sensor
 
-[![hosting terbaik](https://goo.gl/CJlcyZ)](https://www.domainesia.com/?aff=4049)
+[![hosting terbaik](https://goo.gl/CJlcyZ)](https://my.domainesia.com/ref.php?u=15192)
 
 ## Getting started
 
