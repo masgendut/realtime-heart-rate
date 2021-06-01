@@ -104,13 +104,13 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 	}
 	const { client, session, collections } = await Database.getSessionPackage();
 	try {
-		if (request.query.deviceId.length !== 36 && isNumber(parseInt(request.query.deviceId))) {
+		if (request.query.deviceId?.length !== 36 && isNumber(parseInt(request.query.deviceId as string))) {
 			// This means it is old device ID.
 			const result = await collections.devices
 				.find()
 				.execute();
 			const devices: IDeviceModel[] = <IDeviceModel[]> result.getDocuments();
-			const device = devices.find(d => d.old_id === parseInt(request.query.deviceId));
+			const device = devices.find(d => d.old_id === parseInt(request.query.deviceId as string));
 			if (!!device) {
 				request.query.deviceId = UUID.shortToRegular(
 					(<IDeviceModel> result.getDocuments()[0])._id
@@ -126,9 +126,9 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 		}
 		let pulse: IPulseModel = {
 			_id: UUID.generate(),
-			device_id: request.query.deviceId,
-			pulse: parseFloat(request.query.pulse),
-			emitted_at: DateTime.formatDate(parseInt(request.query.timestamp)),
+			device_id: request.query.deviceId as string,
+			pulse: parseFloat(request.query.pulse as string),
+			emitted_at: DateTime.formatDate(parseInt(request.query.timestamp as string)),
 			created_at: DateTime.formatDate()
 		};
 		pulse = UUID.transformIdentifierToShort(pulse);

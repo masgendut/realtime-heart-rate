@@ -1,4 +1,4 @@
-import UUIDv1 from 'uuid/v1';
+import { v1 as UUIDv1 } from 'uuid';
 import SUUID from 'short-uuid';
 
 export class UUID {
