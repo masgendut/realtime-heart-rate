@@ -52,7 +52,7 @@ function main() {
 
 function initialiseApp() {
 	initialiseSession().then(() => {
-		setInterval(function() {
+		setInterval(function () {
 			const timeDiff = new Date().getTime() - lastPulseReceived;
 			if (timeDiff > 3000) {
 				heartRateElement.innerHTML = '0';
@@ -71,7 +71,7 @@ function initialiseApp() {
 	});
 }
 
-(function() {
+(function () {
 	try {
 		eval('async () => {}');
 		main();

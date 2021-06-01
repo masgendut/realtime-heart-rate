@@ -157,11 +157,7 @@ async function onRetrieveHeartRates(pulses) {
 			rawRow[0],
 			formatDate(rawRow[1]),
 			rawRow[2] === null ? 'N/A' : formatDate(rawRow[2]),
-			rawRow[3] === null
-				? 'N/A'
-				: parseFloat(rawRow[3])
-						.toLocaleString('id-ID')
-						.concat(' s'),
+			rawRow[3] === null ? 'N/A' : parseFloat(rawRow[3]).toLocaleString('id-ID').concat(' s'),
 		];
 		rawRows.push(rawRow);
 		rows.push(row);
@@ -244,7 +240,7 @@ function startWebSocket() {
 		createToast(ToastType.Warning, 'Real-Time connection to server opened. Waiting for a response...');
 		socket.send(WebSocketEvent.onConnection);
 	};
-	socket.onopen = function() {
+	socket.onopen = function () {
 		if (socketStates.reconnect !== true) {
 			ping();
 		} else {
@@ -257,13 +253,13 @@ function startWebSocket() {
 		}
 		socketStates.reconnect = false;
 	};
-	socket.onclose = function() {
+	socket.onclose = function () {
 		addDeviceButtonElement.disabled = true;
 		removeDeviceButtonElement.disabled = true;
 		console.warn('WARNING: ' + 'Disconnected from Real-Time server! Retrying to connect...');
 		createToast(ToastType.Warning, 'Disconnected from Real-Time server! Retrying to connect...');
 		socketStates.reconnect = true;
-		setTimeout(function() {
+		setTimeout(function () {
 			startWebSocket();
 		}, 1000);
 	};
@@ -280,7 +276,7 @@ function startWebSocket() {
 		}
 		onResponseEvent(event, data);
 	};
-	socket.onerror = function(event) {
+	socket.onerror = function (event) {
 		event.preventDefault();
 		onError(new Error('An unknown error happen on Real-Time server connection.'));
 	};

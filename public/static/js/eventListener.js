@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-document.querySelector('form').onkeypress = function(e) {
+document.querySelector('form').onkeypress = function (e) {
 	e = e || event;
 	const txtArea = /textarea/i.test((e.target || e.srcElement).tagName);
 	return txtArea || (e.keyCode || e.which || e.charCode || 0) !== 13;
 };
-deviceSelectElement.addEventListener('change', function() {
+deviceSelectElement.addEventListener('change', function () {
 	selectedDeviceID = deviceSelectElement.value;
 	heartRateElement.innerHTML = '0';
 	heartRateEmitTimeElement.innerHTML = '';
@@ -30,7 +30,7 @@ deviceSelectElement.addEventListener('change', function() {
 	setDataTableText('Getting heart rates data of ' + getSelectedDevice().name + '....');
 	const requestTime = new Date().getTime();
 	let passedInterval = false;
-	const interval = setInterval(function() {
+	const interval = setInterval(function () {
 		const intervalTime = new Date().getTime();
 		if (areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] === true) {
 			if (intervalTime - requestTime >= 5000 && !passedInterval) {
@@ -54,37 +54,37 @@ deviceSelectElement.addEventListener('change', function() {
 	areWaitingResponses[WebSocketEvent.onRetrieveHeartRates] = true;
 	socket.send(WebSocketEvent.onRequestHeartRates, selectedDeviceID);
 });
-addDeviceButtonElement.addEventListener('click', function(event) {
+addDeviceButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	addDeviceNameElement.value = '';
 	addModalJQueryElement.modal('show');
 });
-removeDeviceButtonElement.addEventListener('click', function(event) {
+removeDeviceButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	const device = getSelectedDevice();
 	removeDeviceNameElement.innerHTML = device.name + ' [ID: ' + device._id + ']';
 	removeModalJQueryElement.modal('show');
 });
 if (changeChartButtonElement) {
-	changeChartButtonElement.addEventListener('click', function() {
+	changeChartButtonElement.addEventListener('click', function () {
 		if (USE_CHART === true) {
 			switchChart();
 		}
 	});
 }
-xlsxDownloadButtonElement.addEventListener('click', function(event) {
+xlsxDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	requestFile(AvailableFileFormat.XLSX);
 });
-xlsDownloadButtonElement.addEventListener('click', function(event) {
+xlsDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	requestFile(AvailableFileFormat.XLS);
 });
-csvDownloadButtonElement.addEventListener('click', function(event) {
+csvDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	requestFile(AvailableFileFormat.CSV);
 });
-odsDownloadButtonElement.addEventListener('click', function(event) {
+odsDownloadButtonElement.addEventListener('click', function (event) {
 	event.preventDefault();
 	requestFile(AvailableFileFormat.ODS);
 });

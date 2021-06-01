@@ -21,7 +21,10 @@ let chartData = [];
 
 function initialiseChart() {
 	changeChartButtonElement.innerHTML = 'Switch to Transport Delay Chart';
-	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	chartData = [
+		[0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0],
+	];
 	chart = new Chart(heartRateChartElement, {
 		type: 'line',
 		data: {
@@ -97,6 +100,9 @@ function pushChartData(heartRate, timeDelay) {
 }
 
 function clearChartData() {
-	chartData = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+	chartData = [
+		[0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0],
+	];
 	updateChart();
 }

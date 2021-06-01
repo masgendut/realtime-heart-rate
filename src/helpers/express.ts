@@ -25,7 +25,7 @@ const mime: { [k: string]: string } = {
 
 export function favicon(filename: string, pattern: RegExp = /\/favicon\.(png|ico)$/) {
 	filename = path.resolve(filename);
-	return function(request: Request, response: Response, next: NextFunction) {
+	return function (request: Request, response: Response, next: NextFunction) {
 		if (pattern.test(request.url)) {
 			const ext = path.extname(filename);
 			response.set('Content-Type', mime[ext]);
