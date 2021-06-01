@@ -36,7 +36,7 @@ const webAppVersionFileLocation: fs.PathLike = path.join(__dirname, '..', 'publi
 const clientsFileLocation: fs.PathLike = path.join(__dirname, '..', 'clients.json');
 
 const pkgFilePath = path.join(__dirname, '..', 'package.json');
-const pkgFileContent = fs.readFileSync(pkgFilePath, { encoding: 'Utf-8' });
+const pkgFileContent = fs.readFileSync(pkgFilePath, { encoding: 'utf-8' });
 const pkg = JSON.parse(pkgFileContent);
 const appVersion = pkg.version;
 const versionListContent = 'const VERSION_LIST = [ "1.0.0", "2.0.0" ];';

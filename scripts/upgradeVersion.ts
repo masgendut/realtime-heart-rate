@@ -22,7 +22,7 @@ import IPulseModel from '../src/models/IPulseModel';
 import IDeviceModel from '../src/models/IDeviceModel';
 
 const pkgFilePath = path.join(__dirname, '..', 'package.json');
-const pkgFileContent = fs.readFileSync(pkgFilePath, { encoding: 'Utf-8' });
+const pkgFileContent = fs.readFileSync(pkgFilePath, { encoding: 'utf-8' });
 const pkg = JSON.parse(pkgFileContent);
 const APP_IDENTIFIER: string = pkg.name;
 const EXPECTED_VERSION: string = pkg.version;
