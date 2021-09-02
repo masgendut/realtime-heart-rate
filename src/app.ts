@@ -164,7 +164,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 		});
 	} catch (e) {
 		await session.rollback();
-		const message = e.message || 'Internal server error.';
+		const message = (e as Error).message || 'Internal server error.';
 		return response.status(500).json({
 			success: false,
 			code: 500,
@@ -232,7 +232,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 		});
 	} catch (e) {
 		await session.rollback();
-		const message = e.message || 'Internal server error.';
+		const message = (e as Error).message || 'Internal server error.';
 		return response.status(500).json({
 			success: false,
 			code: 500,
@@ -300,7 +300,7 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 			clientUpgraded = true;
 		}
 		await session.commit();
-		return clientUpgraded 
+		return clientUpgraded
 			? response.json({
 				success: true,
 				code: 200,
@@ -314,7 +314,7 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 			});
 	} catch (e) {
 		await session.rollback();
-		const message = e.message || 'Internal server error.';
+		const message = (e as Error).message || 'Internal server error.';
 		return response.status(500).json({
 			success: false,
 			code: 500,
@@ -476,7 +476,7 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 		await session.commit();
 	} catch (e) {
 		await session.rollback();
-		const message = e.message || 'Unknown server error.';
+		const message = (e as Error).message || 'Unknown server error.';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, {
 			success: false,
 			message: 'Failed to add "' + name + '". ' + message
@@ -541,7 +541,7 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
 		await session.commit();
 	} catch (e) {
 		await session.rollback();
-		const message = e.message || 'Database Error: ' + e.sqlMessage || 'Internal server error.';
+		const message = (e as Error).message || 'Database Error: ' + (e as any).sqlMessage || 'Internal server error.';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, {
 			success: false,
 			message: 'Failed to remove "' + name + '". ' + message
@@ -690,7 +690,7 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
 			break;
 		case WebSocketEvent.onRequestFile:
 			type onRequestFileType = {
-				requestedFileID: string, 
+				requestedFileID: string,
 				fileFormat: string,
 				data: { [k: string]: any }
 			};
