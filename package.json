@@ -13,7 +13,7 @@
 		"express": "^4.17.1",
 		"express-async-handler": "^1.1.4",
 		"lodash.isnumber": "^3.0.3",
-		"moment": "^2.29.1",
+		"moment": "^2.29.2",
 		"mysqlx": "^1.1.7",
 		"short-uuid": "^4.2.0",
 		"swagger-ui-express": "^4.1.6",
