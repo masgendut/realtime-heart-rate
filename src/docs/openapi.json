@@ -9,20 +9,17 @@
     },
     "license": {
       "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
     "version": "1.0.0"
   },
   "externalDocs": {
     "description": "Find out more about Swagger",
-    "url": "http://swagger.io"
+    "url": "https://swagger.io"
   },
   "servers": [
     {
-      "url": "https://jantung.masgendut.com/"
-    },
-    {
-      "url": "http://jantung.masgendut.com/"
+      "url": "https://realtime-heart-rate.apps.danang.id/"
     }
   ],
   "tags": [
