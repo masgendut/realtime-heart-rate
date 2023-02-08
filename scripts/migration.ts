@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 import Database from '../src/helpers/database';
 import DateTime from '../src/helpers/datetime';
 import UUID from '../src/helpers/uuid';

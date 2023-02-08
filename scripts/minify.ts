@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-import UglifyJS from 'uglify-es';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as UglifyJS from 'uglify-es';
 
 export async function minify() {
 	const featureFilesLocation: fs.PathLike = path.join(__dirname, '..', 'public', 'static', 'js');

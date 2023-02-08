@@ -31,7 +31,7 @@ import isNumber from 'lodash.isnumber';
 import { docs } from './docs';
 import Database from './helpers/database';
 import DateTime from './helpers/datetime';
-import { router, favicon, notFound } from "./helpers/express";
+import { router, favicon, notFound } from './helpers/express';
 import UUID from './helpers/uuid';
 import { IDeviceModel } from './models/IDeviceModel';
 import { IPulseModel } from './models/IPulseModel';
@@ -65,18 +65,17 @@ app.use(urlencoded({ extended: false })); // Parse body as URL Encoded format
 app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico'))); // Serve favicon
 app.use(express.static(path.join(__dirname, '..', 'public'))); // Static serve 'public' folder
 onApp.get('/', true).handle(async (request, response) => {
-	return response.send(
-		path.join(__dirname, '..', 'public', 'index.html')
-	);
+	return response.send(path.join(__dirname, '..', 'public', 'index.html'));
 }); // Serve front-end's "index.html"
 
 /**
  * Create client connection to the database and set the database time system to use UTC
  */
 Database.getSessionPackage().then(({ client, session }) => {
-	return session.startTransaction()
+	return session
+		.startTransaction()
 		.then(() => {
-			return session.sql('SET time_zone=\'+00:00\';').execute();
+			return session.sql("SET time_zone='+00:00';").execute();
 		})
 		.then(() => {
 			return session.commit();
@@ -85,7 +84,6 @@ Database.getSessionPackage().then(({ client, session }) => {
 			return client.close();
 		});
 });
-
 
 /**
  * Handle an API to be called by pulse sensor device whenever it should emit a
@@ -98,7 +96,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 			return response.status(400).json({
 				success: false,
 				code: 400,
-				message: 'Parameter "' + field + '" is required!'
+				message: 'Parameter "' + field + '" is required!',
 			});
 		}
 	}
@@ -106,21 +104,16 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 	try {
 		if (request.query.deviceId?.length !== 36 && isNumber(parseInt(request.query.deviceId as string))) {
 			// This means it is old device ID.
-			const result = await collections.devices
-				.find()
-				.execute();
-			const devices: IDeviceModel[] = <IDeviceModel[]> result.getDocuments();
-			const device = devices.find(d => d.old_id === parseInt(request.query.deviceId as string));
+			const result = await collections.devices.find().execute();
+			const devices: IDeviceModel[] = <IDeviceModel[]>result.getDocuments();
+			const device = devices.find((d) => d.old_id === parseInt(request.query.deviceId as string));
 			if (!!device) {
-				request.query.deviceId = UUID.shortToRegular(
-					(<IDeviceModel> result.getDocuments()[0])._id
-				);
+				request.query.deviceId = UUID.shortToRegular((<IDeviceModel>result.getDocuments()[0])._id);
 			} else {
 				return response.status(404).json({
 					success: false,
 					code: 404,
-					message:
-						'Device with ID ' + request.query.deviceId + ' is not found.'
+					message: 'Device with ID ' + request.query.deviceId + ' is not found.',
 				});
 			}
 		}
@@ -129,38 +122,34 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 			device_id: request.query.deviceId as string,
 			pulse: parseFloat(request.query.pulse as string),
 			emitted_at: DateTime.formatDate(parseInt(request.query.timestamp as string)),
-			created_at: DateTime.formatDate()
+			created_at: DateTime.formatDate(),
 		};
 		pulse = UUID.transformIdentifierToShort(pulse);
-		const device = await collections.devices
-			.findByID(pulse.device_id);
+		const device = await collections.devices.findByID(pulse.device_id);
 		if (!device) {
 			return response.status(404).json({
 				success: false,
 				code: 404,
-				message:
-					'Device with ID ' + UUID.shortToRegular(pulse.device_id) + ' is not found.'
+				message: 'Device with ID ' + UUID.shortToRegular(pulse.device_id) + ' is not found.',
 			});
 		}
-		const addResult = await collections.pulses
-			.add(pulse)
-			.execute();
+		const addResult = await collections.pulses.add(pulse).execute();
 		if (addResult.getWarningsCount() > 0) {
 			const warnings = addResult.getWarnings();
 			return response.status(404).json({
 				success: false,
 				code: warnings[0].code,
-				message: warnings[0].msg
+				message: warnings[0].msg,
 			});
 		}
-		pulse = <IPulseModel>await collections.pulses.findByID(<string>pulse._id) ;
+		pulse = <IPulseModel>await collections.pulses.findByID(<string>pulse._id);
 		await session.commit();
 		serverBroadcast(WebSocketEvent.onEmitHeartRate, UUID.transformIdentifierToRegular(pulse));
 		return response.json({
 			success: true,
 			code: 200,
 			message: 'New pulse data recorded successfully!',
-			data: UUID.transformIdentifierToRegular(pulse)
+			data: UUID.transformIdentifierToRegular(pulse),
 		});
 	} catch (e) {
 		await session.rollback();
@@ -169,7 +158,7 @@ onApp.get('/emit-pulse').handle(async (request, response) => {
 			success: false,
 			code: 500,
 			message: message,
-			error: e
+			error: e,
 		});
 	} finally {
 		await client.close();
@@ -187,39 +176,37 @@ onApp.post('/register-session').handle(async (request, response) => {
 			return response.status(400).json({
 				success: false,
 				code: 400,
-				message: 'Parameter "' + field + '" is required!'
+				message: 'Parameter "' + field + '" is required!',
 			});
 		}
 	}
 	const { client, session, collections } = await Database.getSessionPackage();
 	try {
 		await session.startTransaction();
-		const frontEndClient: IClientModel = <IClientModel>await collections.clients
-			.findByID(UUID.regularToShort(request.body.clientId));
+		const frontEndClient: IClientModel = <IClientModel>(
+			await collections.clients.findByID(UUID.regularToShort(request.body.clientId))
+		);
 		if (!frontEndClient) {
 			return response.status(404).json({
 				success: false,
 				code: 404,
-				message:
-					'Front-End Client with ID ' + request.body.clientId + ' is not found.'
+				message: 'Front-End Client with ID ' + request.body.clientId + ' is not found.',
 			});
 		}
 		let frontEndSession: ISessionModel = {
 			_id: UUID.generate(),
 			client_id: request.body.clientId,
 			user_agent: UserAgent.lookup(request.headers['user-agent']),
-			created_at: DateTime.formatDate()
+			created_at: DateTime.formatDate(),
 		};
 		frontEndSession = UUID.transformIdentifierToShort(frontEndSession);
-		const addResult = await collections.sessions
-			.add(frontEndSession)
-			.execute();
+		const addResult = await collections.sessions.add(frontEndSession).execute();
 		if (addResult.getWarningsCount() > 0) {
 			const warnings = addResult.getWarnings();
 			return response.status(404).json({
 				success: false,
 				code: warnings[0].code,
-				message: warnings[0].msg
+				message: warnings[0].msg,
 			});
 		}
 		frontEndSession = <ISessionModel>await collections.sessions.findByID(<string>frontEndSession._id);
@@ -228,7 +215,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 			success: true,
 			code: 200,
 			message: 'Front-End Client device successfully registered!',
-			data: UUID.transformIdentifierToRegular(frontEndSession)
+			data: UUID.transformIdentifierToRegular(frontEndSession),
 		});
 	} catch (e) {
 		await session.rollback();
@@ -237,7 +224,7 @@ onApp.post('/register-session').handle(async (request, response) => {
 			success: false,
 			code: 500,
 			message: message,
-			error: e
+			error: e,
 		});
 	} finally {
 		await client.close();
@@ -255,7 +242,7 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 			return response.status(400).json({
 				success: false,
 				code: 400,
-				message: 'Parameter "' + field + '" is required!'
+				message: 'Parameter "' + field + '" is required!',
 			});
 		}
 	}
@@ -266,34 +253,30 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 		await session.startTransaction();
 		if (targetVersion === '2.0.0') {
 			const localPulses: {
-				old_id: string,
-				arrived_at: number
+				old_id: string;
+				arrived_at: number;
 			}[] = data;
-			const findPulseResult = await collections.pulses
-				.find()
-				.execute();
-			const pulses: IPulseModel[] = <IPulseModel[]> findPulseResult.getDocuments();
+			const findPulseResult = await collections.pulses.find().execute();
+			const pulses: IPulseModel[] = <IPulseModel[]>findPulseResult.getDocuments();
 			for (const { old_id, arrived_at } of localPulses) {
-				const pulse = pulses.find(p => p.old_id === parseInt(old_id));
+				const pulse = pulses.find((p) => p.old_id === parseInt(old_id));
 				if (!!pulse) {
 					let pulseArrival: IPulseArrivalModel = {
 						_id: UUID.generate(),
 						session_id: sessionId,
 						pulse_id: pulse._id,
 						arrived_at: DateTime.formatDate(arrived_at),
-						created_at: DateTime.formatDate()
+						created_at: DateTime.formatDate(),
 					};
 					pulseArrival = UUID.transformIdentifierToShort(pulseArrival);
-					const addResult = await collections.pulse_arrivals
-						.add(pulseArrival)
-						.execute();
+					const addResult = await collections.pulse_arrivals.add(pulseArrival).execute();
 					if (addResult.getWarningsCount() > 0) {
 						const warning = addResult.getWarnings()[0];
 						return response.json({
 							success: false,
 							code: 400,
-							message: warning.msg
-						})
+							message: warning.msg,
+						});
 					}
 				}
 			}
@@ -302,16 +285,16 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 		await session.commit();
 		return clientUpgraded
 			? response.json({
-				success: true,
-				code: 200,
-				message: 'Client app upgrade request has been approved.',
-				data: { currentVersion, targetVersion, sessionId }
-			})
+					success: true,
+					code: 200,
+					message: 'Client app upgrade request has been approved.',
+					data: { currentVersion, targetVersion, sessionId },
+			  })
 			: response.json({
-				success: false,
-				code: 400,
-				message: 'Target version ' + targetVersion + ' is not available.'
-			});
+					success: false,
+					code: 400,
+					message: 'Target version ' + targetVersion + ' is not available.',
+			  });
 	} catch (e) {
 		await session.rollback();
 		const message = (e as Error).message || 'Internal server error.';
@@ -319,7 +302,7 @@ onApp.post('/client-upgrade').handle(async (request, response) => {
 			success: false,
 			code: 500,
 			message: message,
-			error: e
+			error: e,
 		});
 	} finally {
 		await client.close();
@@ -342,7 +325,7 @@ app.use(notFound);
  * @return object WebSocket payload.
  */
 function createPayload(sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>): string {
-	return JSON.stringify({ sessionID, event, data })
+	return JSON.stringify({ sessionID, event, data });
 }
 
 /**
@@ -355,7 +338,7 @@ function createPayload(sessionID: string, event: WebSocketEvent, data?: WebSocke
  * @param data WebSocketData The payload body data.
  */
 function serverSend(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>) {
-	socket.send(createPayload(sessionID, event, data))
+	socket.send(createPayload(sessionID, event, data));
 }
 
 /**
@@ -369,11 +352,7 @@ function serverSend(socket: WebSocket, sessionID: string, event: WebSocketEvent,
 function serverBroadcast(event: WebSocketEvent, data?: WebSocketData<unknown>) {
 	webSocketServer.clients.forEach(function each(client) {
 		if (client.readyState === WebSocket.OPEN) {
-			serverSend(
-				client,
-				(<{ sessionID: string }><unknown>client).sessionID,
-				event,
-				data);
+			serverSend(client, (<{ sessionID: string }>(<unknown>client)).sessionID, event, data);
 		}
 	});
 }
@@ -387,7 +366,12 @@ function serverBroadcast(event: WebSocketEvent, data?: WebSocketData<unknown>) {
  * @param sessionID string Session identifier of the client.
  */
 function onConnection(socket: WebSocket, sessionID: string) {
-	serverSend(socket, sessionID, WebSocketEvent.onConnection, 'Connection to Real-Time server is established using Web Socket.');
+	serverSend(
+		socket,
+		sessionID,
+		WebSocketEvent.onConnection,
+		'Connection to Real-Time server is established using Web Socket.'
+	);
 }
 
 /**
@@ -408,17 +392,15 @@ async function onArrivalHeartRate(socket: WebSocket, sessionID: string, pulseID:
 			session_id: sessionID,
 			pulse_id: pulseID,
 			arrived_at: DateTime.formatDate(parseInt(timestamp)),
-			created_at: DateTime.formatDate()
+			created_at: DateTime.formatDate(),
 		};
 		pulseArrival = UUID.transformIdentifierToShort(pulseArrival);
 		await session.startTransaction();
-		const addResult = await collections.pulse_arrivals
-			.add(pulseArrival)
-			.execute();
+		const addResult = await collections.pulse_arrivals.add(pulseArrival).execute();
 		if (addResult.getWarningsCount() > 0) {
 			const warnings = addResult.getWarnings();
 			for (const warning of warnings) {
-				onError(socket, sessionID, new Error(warning.msg))
+				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
 		await session.commit();
@@ -445,17 +427,15 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 		let device: IDeviceModel = {
 			_id: UUID.generate(),
 			name: name,
-			created_at: DateTime.formatDate()
+			created_at: DateTime.formatDate(),
 		};
 		device = UUID.transformIdentifierToShort(device);
 		await session.startTransaction();
-		const addResult = await collections.devices
-			.add(device)
-			.execute();
+		const addResult = await collections.devices.add(device).execute();
 		if (addResult.getWarningsCount() > 0) {
 			const warnings = addResult.getWarnings();
 			for (const warning of warnings) {
-				onError(socket, sessionID, new Error(warning.msg))
+				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
 		const success = addResult.getAffectedItemsCount() === 1;
@@ -464,9 +444,7 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 			: 'Failed to add "' + name + '". ';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, { success, message });
 		if (success) {
-			const findDeviceResult = await collections.devices
-				.find()
-				.execute();
+			const findDeviceResult = await collections.devices.find().execute();
 			const devices: IDeviceModel[] = [];
 			for (const device of findDeviceResult.getDocuments()) {
 				devices.push(UUID.transformIdentifierToRegular(device));
@@ -479,7 +457,7 @@ async function onAddDevice(socket: WebSocket, sessionID: string, name: string) {
 		const message = (e as Error).message || 'Unknown server error.';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, {
 			success: false,
-			message: 'Failed to add "' + name + '". ' + message
+			message: 'Failed to add "' + name + '". ' + message,
 		});
 	} finally {
 		await client.close();
@@ -501,37 +479,31 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
 	try {
 		deviceID = UUID.regularToShort(deviceID);
 		await session.startTransaction();
-		const findPulseResult = await collections.pulses
-			.find({ device_id: deviceID })
-			.execute();
+		const findPulseResult = await collections.pulses.find({ device_id: deviceID }).execute();
 		const pulses: IPulseModel[] = <IPulseModel[]>findPulseResult.getDocuments();
-		const deletePulseResult = await collections.pulses
-			.remove({ device_id: deviceID })
-			.execute();
+		const deletePulseResult = await collections.pulses.remove({ device_id: deviceID }).execute();
 		if (deletePulseResult.getWarningsCount() > 0) {
 			const warnings = deletePulseResult.getWarnings();
 			for (const warning of warnings) {
 				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
-		const deleteDeviceResult = await collections.devices
-			.removeByID(deviceID);
+		const deleteDeviceResult = await collections.devices.removeByID(deviceID);
 		if (deleteDeviceResult.getWarningsCount() > 0) {
 			const warnings = deleteDeviceResult.getWarnings();
 			for (const warning of warnings) {
 				onError(socket, sessionID, new Error(warning.msg));
 			}
 		}
-		const success = deletePulseResult.getAffectedItemsCount() === pulses.length
-			&& deleteDeviceResult.getAffectedItemsCount() === 1;
+		const success =
+			deletePulseResult.getAffectedItemsCount() === pulses.length &&
+			deleteDeviceResult.getAffectedItemsCount() === 1;
 		const message = success
 			? 'Device "' + name + '" has been successfully removed!'
 			: 'Failed to remove "' + name + '". ';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, { success, message });
 		if (success) {
-			const findDeviceResult = await collections.devices
-				.find()
-				.execute();
+			const findDeviceResult = await collections.devices.find().execute();
 			const devices: IDeviceModel[] = [];
 			for (const device of findDeviceResult.getDocuments()) {
 				devices.push(UUID.transformIdentifierToRegular(device));
@@ -544,7 +516,7 @@ async function onRemoveDevice(socket: WebSocket, sessionID: string, deviceID: st
 		const message = (e as Error).message || 'Database Error: ' + (e as any).sqlMessage || 'Internal server error.';
 		serverSend(socket, sessionID, WebSocketEvent.onAfterAddRemoveDevice, {
 			success: false,
-			message: 'Failed to remove "' + name + '". ' + message
+			message: 'Failed to remove "' + name + '". ' + message,
 		});
 	} finally {
 		await client.close();
@@ -593,18 +565,15 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
 	const { client, collections } = await Database.getSessionPackage();
 	try {
 		deviceID = UUID.regularToShort(deviceID);
-		const findPulseResult = await collections.pulses
-			.find({ device_id: deviceID })
-			.execute();
-		const findPulseArrivalResult = await collections.pulse_arrivals
-			.find()
-			.execute();
+		const findPulseResult = await collections.pulses.find({ device_id: deviceID }).execute();
+		const findPulseArrivalResult = await collections.pulse_arrivals.find().execute();
 		let pulses: IPulseModel[] = [];
 		const pulseArrivals: IPulseArrivalModel[] = <IPulseArrivalModel[]>findPulseArrivalResult.getDocuments();
 		for (const pulse of findPulseResult.getDocuments()) {
-			const pulseArrival = pulseArrivals.find(_pulseArrival => {
-				return _pulseArrival.pulse_id === pulse._id &&
-					_pulseArrival.session_id === UUID.regularToShort(sessionID);
+			const pulseArrival = pulseArrivals.find((_pulseArrival) => {
+				return (
+					_pulseArrival.pulse_id === pulse._id && _pulseArrival.session_id === UUID.regularToShort(sessionID)
+				);
 			});
 			if (pulseArrival !== void 0) {
 				(<IPulseModel>pulse).arrived_at = pulseArrival.arrived_at;
@@ -635,7 +604,13 @@ async function onRequestHeartRates(socket: WebSocket, sessionID: string, deviceI
  * @param fileFormat string The requested file format.
  * @param data Object Additional data to specify file request.
  */
-async function onRequestFile(socket: WebSocket, sessionID: string, requestedFileID: string, fileFormat: string, data: { [k: string]: any }) {
+async function onRequestFile(
+	socket: WebSocket,
+	sessionID: string,
+	requestedFileID: string,
+	fileFormat: string,
+	data: { [k: string]: any }
+) {
 	// const { client, collections } = await Database.getSessionPackage();
 	// try {
 	// 	const fileName = 'heart-rates-'.concat(new Date().getTime().toString()).concat(fileFormat);
@@ -659,26 +634,35 @@ async function onRequestFile(socket: WebSocket, sessionID: string, requestedFile
  * @param event WebSocketEvent WebSocket Event defined by WebSocketEvent enum.
  * @param data WebSocketData The payload body data.
  */
-async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSocketEvent, data?: WebSocketData<unknown>) {
+async function onRequestEvent(
+	socket: WebSocket,
+	sessionID: string,
+	event: WebSocketEvent,
+	data?: WebSocketData<unknown>
+) {
 	switch (event) {
 		case WebSocketEvent.onConnection:
 			onConnection(socket, sessionID);
 			break;
 		case WebSocketEvent.onArrivalHeartRate:
-			const { pulseID, timestamp } = <{
-				pulseID: string,
-				timestamp: string
-			}>data;
+			const { pulseID, timestamp } = <
+				{
+					pulseID: string;
+					timestamp: string;
+				}
+			>data;
 			await onArrivalHeartRate(socket, sessionID, pulseID, timestamp);
 			break;
 		case WebSocketEvent.onAddDevice:
 			await onAddDevice(socket, sessionID, <string>data);
 			break;
 		case WebSocketEvent.onRemoveDevice:
-			const { deviceID, name } = <{
-				deviceID: string,
-				name: string
-			}>data;
+			const { deviceID, name } = <
+				{
+					deviceID: string;
+					name: string;
+				}
+			>data;
 			await onRemoveDevice(socket, sessionID, deviceID, name);
 			break;
 		case WebSocketEvent.onRequestDevices:
@@ -690,12 +674,12 @@ async function onRequestEvent(socket: WebSocket, sessionID: string, event: WebSo
 			break;
 		case WebSocketEvent.onRequestFile:
 			type onRequestFileType = {
-				requestedFileID: string,
-				fileFormat: string,
-				data: { [k: string]: any }
+				requestedFileID: string;
+				fileFormat: string;
+				data: { [k: string]: any };
 			};
 			const { fileFormat, requestedFileID } = <onRequestFileType>data;
-			await onRequestFile(socket, sessionID, requestedFileID, fileFormat, (<onRequestFileType>data).data );
+			await onRequestFile(socket, sessionID, requestedFileID, fileFormat, (<onRequestFileType>data).data);
 			break;
 	}
 }
@@ -732,7 +716,7 @@ async function checkSession(socket: WebSocket, sessionID: string): Promise<boole
 /**
  * Configure WebSocket
  */
-webSocketServer.on('connection', function(socket) {
+webSocketServer.on('connection', function (socket) {
 	socket.on('message', async (message) => {
 		try {
 			const { sessionID, event, data } = JSON.parse(message.toString());
@@ -740,7 +724,7 @@ webSocketServer.on('connection', function(socket) {
 				serverSend(socket, sessionID, WebSocketEvent.onInvalidSession, sessionID);
 				return;
 			}
-			(<{ sessionID: string }><unknown>socket).sessionID = sessionID;
+			(<{ sessionID: string }>(<unknown>socket)).sessionID = sessionID;
 			if (!event) {
 				serverSend(socket, sessionID, WebSocketEvent.onInvalidEvent);
 				return;
@@ -749,7 +733,7 @@ webSocketServer.on('connection', function(socket) {
 		} catch (error) {
 			onError(socket, null, error);
 		}
-	})
+	});
 });
 
 /**
@@ -778,7 +762,7 @@ enum WebSocketEvent {
 	onRetrieveFile = 'FILE_RETRIEVE',
 	onError = 'ERROR',
 	onInvalidEvent = 'EVENT_INVALID',
-	onInvalidSession = 'SESSION_INVALID'
+	onInvalidSession = 'SESSION_INVALID',
 }
 
 /**

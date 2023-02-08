@@ -14,7 +14,7 @@
  */
 
 import DatabaseConfig from '../config/database.config';
-import mysqlx, { Client, Collection, Schema, Session, Table } from 'mysqlx';
+import mysqlx, { Client, Collection, Schema, Session } from 'mysqlx';
 
 class Database {
 	private readonly collectionNameList: string[];
@@ -53,7 +53,6 @@ class Database {
 }
 
 type CollectionName = 'clients' | 'devices' | 'pulses' | 'pulse_arrivals' | 'sessions';
-type TableName = 'old_devices' | 'old_pulses';
 
 type DatabaseSessionPackage = {
 	client: Client;

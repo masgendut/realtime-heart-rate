@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-import mysqlx, { Client, Collection, Schema, Session, Table } from 'mysqlx';
+import * as fs from 'fs';
+import * as path from 'path';
+import mysqlx, { Client, Collection, Schema, Session } from 'mysqlx';
 import DatabaseConfig from '../src/config/database.config';
 import UUID from '../src/helpers/uuid';
 import IPulseModel from '../src/models/IPulseModel';
